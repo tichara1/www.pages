@@ -1,0 +1,556 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koncept: QR/NFC tag → návodová PWA</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1020; --panel:#171933; --panel2:#1f2347; --ink:#e9eaf6; --muted:#a8acc9;
+    --accent:#7c5cff; --accent2:#21d4c2; --line:#2b2f55;
+    --good:#3ddc97; --mid:#ffcf5c; --low:#ff7a6b;
+    --radius:18px; --maxw:1080px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:radial-gradient(1200px 600px at 80% -10%, #2a2150 0%, transparent 60%),
+               radial-gradient(900px 500px at -10% 10%, #0f3a3a 0%, transparent 55%), var(--bg);
+    color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 22px}
+  a{color:var(--accent2); text-decoration:none}
+  a:hover{text-decoration:underline}
+  header.hero{padding:64px 0 28px}
+  .eyebrow{letter-spacing:.18em; text-transform:uppercase; font-size:12px; color:var(--accent2); font-weight:700}
+  h1{font-size:clamp(30px,5vw,52px); line-height:1.07; margin:.25em 0 .2em; letter-spacing:-.02em}
+  h1 .grad{background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .lede{font-size:clamp(17px,2.3vw,21px); color:var(--muted); max-width:760px}
+  .pill{display:inline-flex; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line);
+        padding:7px 13px; border-radius:999px; font-size:13px; color:var(--muted); margin:6px 8px 0 0}
+  .pill b{color:var(--ink)}
+  nav.toc{display:flex; flex-wrap:wrap; gap:8px; margin:26px 0 8px}
+  nav.toc a{background:var(--panel); border:1px solid var(--line); padding:8px 13px; border-radius:999px; color:var(--muted); font-size:13px}
+  nav.toc a:hover{border-color:var(--accent); color:var(--ink); text-decoration:none}
+  section{padding:38px 0; border-top:1px solid var(--line)}
+  h2{font-size:clamp(22px,3.2vw,32px); margin:0 0 6px; letter-spacing:-.01em}
+  h2 .n{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:10px}
+  .sub{color:var(--muted); margin:0 0 22px; max-width:780px}
+  h3{font-size:18px; margin:22px 0 8px}
+  .grid{display:grid; gap:18px}
+  .cols-2{grid-template-columns:repeat(2,1fr)}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:840px){.cols-2,.cols-3{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel) 60%,#15172e); border:1px solid var(--line);
+        border-radius:var(--radius); padding:20px}
+  .card.soft{background:var(--panel2)}
+  .mermaid-box{background:#0c0d1c; border:1px solid var(--line); border-radius:var(--radius); padding:18px; margin:14px 0; overflow:auto}
+  .mermaid-box figcaption{color:var(--muted); font-size:13px; margin-top:6px}
+  table{width:100%; border-collapse:collapse; font-size:14.5px; overflow:hidden; border-radius:14px}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:var(--panel2); font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+  tr:last-child td{border-bottom:none}
+  .score{display:inline-flex; align-items:center; justify-content:center; min-width:46px; padding:3px 9px; border-radius:999px;
+         font-weight:800; font-size:14px; color:#0c0d1c}
+  .s-good{background:var(--good)} .s-mid{background:var(--mid)} .s-low{background:var(--low)}
+  .badge{display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700; border:1px solid var(--line); color:var(--muted)}
+  .namegrid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+  @media(max-width:840px){.namegrid{grid-template-columns:repeat(2,1fr)}}
+  .name{background:var(--panel2); border:1px solid var(--line); border-radius:14px; padding:13px}
+  .name b{font-size:18px} .name span{display:block; color:var(--muted); font-size:13px; margin-top:3px}
+  .name.top{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset}
+  .vcard h3{display:flex; align-items:center; gap:12px; margin-top:0}
+  .vcard .meta{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 10px}
+  .vcard h4{margin:14px 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent2)}
+  .vcard p, .vcard ul{margin:.2em 0}
+  .vcard ul{padding-left:18px} .vcard li{margin:3px 0}
+  details.src{margin-top:10px} details.src summary{cursor:pointer; color:var(--muted); font-size:13px}
+  details.src a{display:inline-block; margin:4px 10px 0 0; font-size:12.5px}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  @media(max-width:840px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--panel2); border:1px solid var(--line); border-radius:14px; padding:14px}
+  .kpi b{display:block; font-size:24px} .kpi span{color:var(--muted); font-size:13px}
+  .callout{background:linear-gradient(90deg,rgba(124,92,255,.16),rgba(33,212,194,.10)); border:1px solid var(--line);
+           border-radius:var(--radius); padding:18px 20px; margin:16px 0}
+  .step{display:flex; gap:14px; margin:10px 0}
+  .step .num{flex:0 0 30px; height:30px; border-radius:50%; background:var(--accent); color:#0c0d1c; font-weight:800; display:flex; align-items:center; justify-content:center}
+  footer{padding:40px 0 70px; color:var(--muted); font-size:13px}
+  .tagline{color:var(--accent2); font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Produktový koncept &middot; 3. 6. 2026</div>
+  <h1>Naskenuj a&nbsp;hned <span class="grad">víš</span>.</h1>
+  <p class="lede">Digitální vrstva návodů a&nbsp;příběhů přilepená na fyzické věci. Jedna QR&nbsp;+&nbsp;NFC nálepka → telefon → okamžitě se otevře web s&nbsp;instruktážním videem. Žádná instalace. Pracovní názvy: <b>Qido</b>, <b>Tapio</b>, <b>Knack</b>.</p>
+  <div>
+    <span class="pill">📍 Trh: <b>ČR teď, svět později</b></span>
+    <span class="pill">🎨 Tón: <b>hravý / moderní</b></span>
+    <span class="pill">🔑 Princip: <b>jednoduchost</b></span>
+    <span class="pill">🛠️ Model: <b>SaaS + obsah na klíč</b></span>
+  </div>
+  <nav class="toc">
+    <a href="#koncept">Koncept</a>
+    <a href="#jak">Jak to funguje</a>
+    <a href="#diagramy">Procesní diagramy</a>
+    <a href="#hodnota">Hodnota & model</a>
+    <a href="#jmena">Jména</a>
+    <a href="#prilezitost">Příležitost dle vertikál</a>
+    <a href="#vertikaly">Průzkum trhu</a>
+    <a href="#gtm">Go-to-market</a>
+  </nav>
+</header>
+
+<!-- KONCEPT -->
+<section id="koncept">
+  <h2><span class="n">01</span>Koncept jedním dechem</h2>
+  <p class="sub">Fyzické věci kolem nás (stroje, exponáty, spotřebiče, přístroje) v sobě nesou know-how, které je dnes uzamčené v papírech, hlavách lidí nebo nikde. Produkt tohle know-how <b>přilepí přímo na věc</b> a zpřístupní jedním gestem.</p>
+
+  <div class="grid cols-3">
+    <div class="card">
+      <h3>🏷️ Tag na věci</h3>
+      <p>Na každou věc jde nálepka s <b>QR kódem i NFC</b> v jednom. Kdo má telefon u sebe, přiloží ho (tap); kdo ne, naskenuje kód. Dynamický odkaz → obsah se mění bez přelepování.</p>
+    </div>
+    <div class="card">
+      <h3>📱 PWA bez instalace</h3>
+      <p>Po načtení se otevře <b>webová aplikace</b> — nic se nestahuje, žádný login pro koncového uživatele. Video „jak na to" + popis, vždy aktuální a vícejazyčně.</p>
+    </div>
+    <div class="card">
+      <h3>⭐ Vrstva navíc</h3>
+      <p>Oblíbené, skládání vlastních <b>sestav / okruhů / postupů</b>, sdílení s ostatními, mapa/přehled a <b>analytika naskenování</b> pro provozovatele.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b>Proč to obstojí:</b> trh QR generátorů a digitálních manuálů je plný, ale roztříštěný. Náš obranný val nejsou funkce — je to <span class="tagline">jednoduchost (zero-install PWA)</span> + <span class="tagline">obsah na klíč</span> (natočíme videa a napíšeme popisy za zákazníka). To dělá z jednorázového softwaru opakovaný příjem a odlišuje nás od „udělej si sám" nástrojů.
+  </div>
+</section>
+
+<!-- JAK TO FUNGUJE -->
+<section id="jak">
+  <h2><span class="n">02</span>Jak to funguje — uživatelská smyčka</h2>
+  <p class="sub">Jedno gesto otevře obsah. Vše ostatní je nadstavba, která drží uživatele uvnitř a sbírá data pro provozovatele.</p>
+  <figure class="mermaid-box">
+    <pre class="mermaid">
+flowchart LR
+  A["🏷️ Fyzická věc<br/>QR + NFC nálepka"] -->|"sken / tap telefonem"| B{"📱 Otevře se PWA<br/>(bez instalace)"}
+  B --> C["▶️ Instruktážní video<br/>+ návod / popis"]
+  C --> D["⭐ Přidat do oblíbených"]
+  C --> E["🧩 Složit sestavu / okruh / postup"]
+  C --> F["📤 Sdílet s ostatními"]
+  C --> G["🗺️ Mapa / přehled věcí"]
+  C --> L["🌍 Přepnout jazyk"]
+  B -.->|"každý sken"| H[("📊 Analytika provozovatele")]
+    </pre>
+    <figcaption>Diagram 1 — Tok koncového uživatele od naskenování po nadstavbové funkce.</figcaption>
+  </figure>
+</section>
+
+<!-- DIAGRAMY -->
+<section id="diagramy">
+  <h2><span class="n">03</span>Procesní diagramy</h2>
+  <p class="sub">Jak to celé může fungovat z pohledu dodávky obsahu a technické architektury.</p>
+
+  <figure class="mermaid-box">
+    <pre class="mermaid">
+flowchart TD
+  S1["📞 Poptávka zákazníka"] --> S2["🔍 Audit věcí<br/>co otagovat"]
+  S2 --> S3["🎬 Produkce obsahu<br/>natočení videí + texty"]
+  S3 --> S4["🌍 Vícejazyčné verze<br/>auto-překlad"]
+  S4 --> S5["🏷️ Generování QR + NFC tagů"]
+  S5 --> S6["🧷 Nálepky nalepeny na věci"]
+  S6 --> S7["🚀 Spuštěno — uživatelé skenují"]
+  S7 --> S8["📊 Analytika & průběžný update"]
+  S8 -.->|"dynamický QR: změna obsahu<br/>bez přelepování"| S3
+    </pre>
+    <figcaption>Diagram 2 — Onboarding zákazníka a služba „obsah na klíč" (zdroj opakovaného příjmu).</figcaption>
+  </figure>
+
+  <figure class="mermaid-box">
+    <pre class="mermaid">
+flowchart LR
+  subgraph FYZ["Fyzický svět"]
+    T["🏷️ QR + NFC tag<br/>krátká URL / tag ID"]
+  end
+  subgraph CLOUD["Cloud"]
+    R["↩️ Resolver / redirect"]
+    CMS[("🗂️ Obsah CMS<br/>videa · popisy · jazyky")]
+    AN[("📊 Analytika")]
+    R --> CMS
+    R --> AN
+  end
+  subgraph TEL["Telefon uživatele"]
+    P["📱 PWA"]
+  end
+  ADMIN["🧑‍💼 Správce zákazníka"] --> CMS
+  T -->|"sken / tap"| R
+  R --> P
+  CMS --> P
+    </pre>
+    <figcaption>Diagram 3 — Architektura: tag nese jen ID, obsah žije v cloudu a teče do PWA; admin spravuje, analytika sbírá.</figcaption>
+  </figure>
+</section>
+
+<!-- HODNOTA -->
+<section id="hodnota">
+  <h2><span class="n">04</span>Hodnota & obchodní model</h2>
+  <p class="sub">Pět úhlů, které z toho dělají prodejný nástroj do firem — ne jen „generátor QR".</p>
+  <div class="grid cols-2">
+    <div class="card"><h3>1 · Jednoduchost = hlavní zbraň</h3><p>Koncový uživatel <b>nic neinstaluje</b> (PWA), správce přidává obsah drag-and-drop. Nejnižší možné tření na obou stranách.</p></div>
+    <div class="card"><h3>2 · Obsah na klíč</h3><p>Natočíme a sestříháme videa, napíšeme popisy. Velký diferenciátor proti „udělej si sám" — a <b>opakovaný příjem</b>, ne jen jednorázová licence.</p></div>
+    <div class="card"><h3>3 · QR + NFC v jedné nálepce</h3><p>Tap pro ty s telefonem v ruce, sken pro ostatní. Jeden artefakt, dvě technologie, žádné rozhodování.</p></div>
+    <div class="card"><h3>4 · Analytika využití</h3><p>Co se skenuje nejvíc = kde je největší tření / zájem. Heatmapa strojů, nejčtenější návod — tvrdé argumenty pro management.</p></div>
+    <div class="card"><h3>5 · Vícejazyčnost / auto-překlad</h3><p>Killer feature pro muzea, turismus, hotely a výrobu s cizojazyčnými pracovníky. V ČR 3 ze 4 nocí v ubytování jsou zahraniční hosté.</p></div>
+    <div class="card soft"><h3>💶 Cenotvorba</h3><p><b>SaaS</b> per počet tagů / lokací + <b>setup fee</b> za produkci obsahu. Dva tiery: <i>self-service</i> (nahrají si sami) vs <i>na klíč</i> (natočíme my). Per-asset/per-lokace cena je stravitelnější než per-user.</p></div>
+  </div>
+
+  <figure class="mermaid-box">
+    <pre class="mermaid">
+flowchart LR
+  C["🏢 Zákazník"] -->|"měsíční předplatné"| SaaS["SaaS platforma"]
+  C -->|"jednorázové / balíček"| SVC["🎬 Produkce obsahu"]
+  SVC --> MOAT["🛡️ Obranný val<br/>hotový obsah = lock-in"]
+  SaaS --> VALUE["⬇️ tickety · ⬆️ zážitek<br/>📊 data · 🌍 jazyky"]
+  VALUE --> C
+  MOAT --> C
+    </pre>
+    <figcaption>Diagram 4 — Hodnotový tok: software i služba se vzájemně drží; hotový obsah vytváří lock-in.</figcaption>
+  </figure>
+</section>
+
+<!-- JMENA -->
+<section id="jmena">
+  <h2><span class="n">05</span>Návrhy jmen <span class="badge">uloženo do paměti</span></h2>
+  <p class="sub">Filtr: krátké, vyslovitelné česky i anglicky, ne přehnaně české (unese expanzi), hravý nádech.</p>
+
+  <h3>TOP doporučení</h3>
+  <div class="namegrid">
+    <div class="name top"><b>Qido</b><span>čti „kvído" · Q z QR + guide · zní jako jméno (Kvído), neutrální pro svět</span></div>
+    <div class="name top"><b>Tapio</b><span>tap + přátelské -io · sedí na QR i NFC · silný all-rounder</span></div>
+    <div class="name top"><b>Knack</b><span>EN „get the knack of it" = chytit grif · sebevědomé, řeší expanzi</span></div>
+    <div class="name top"><b>Cue / Cuely</b><span>QR je doslova „cue" — signál spouštějící akci · elegantní</span></div>
+  </div>
+
+  <h3>Širší menu</h3>
+  <div class="grid cols-3" style="margin-top:6px">
+    <div class="card soft"><b>Scan → víš</b><p>Skena · Skeno · Scanly · Naki · Scanvi</p></div>
+    <div class="card soft"><b>Tap / NFC</b><p>Tappy · Tapr · Taplo · Tapn</p></div>
+    <div class="card soft"><b>Ukázat / odhalit</b><p>Peeky · Revio · Lumo · Aha</p></div>
+    <div class="card soft"><b>Vědět / grif</b><p>Knowo · Savvy · Wispr · Hinto</p></div>
+    <div class="card soft"><b>Digitální dvojče</b><p>Layr · Twino · Mirro · Overlay</p></div>
+    <div class="card soft"><b>Bod / pin</b><p>Dotto · Pinto · Spoto</p></div>
+  </div>
+  <p class="sub" style="margin-top:14px">⚠️ Dostupnost domén a ochranných známek (.com / .io / .cz, EUIPO/ÚPV) zatím <b>NEověřena</b> — nutný krok u finální 2–3.</p>
+</section>
+
+<!-- PRILEZITOST -->
+<section id="prilezitost">
+  <h2><span class="n">06</span>Příležitost dle vertikál</h2>
+  <p class="sub">Skóre 1–5 z průzkumu (níže detailně). Vyšší = silnější příležitost s ohledem na bolest, ochotu platit a konkurenci.</p>
+  <table>
+    <thead><tr><th>Vertikála</th><th>Skóre</th><th>Proč</th><th>Hlavní riziko</th></tr></thead>
+    <tbody>
+      <tr><td><b>Výroba & průmysl</b></td><td><span class="score s-good">4/5</span></td><td>Akutní CZ bolest (nedostatek + cizojazyční pracovníci), ochota platit, mezera proti drahým enterprise nástrojům.</td><td>Zavedení hráči (Tulip, SafetyCulture), enterprise požadavky (data, offline), škálování natáčení.</td></tr>
+      <tr><td><b>Muzea & turismus</b></td><td><span class="score s-good">4/5</span></td><td>Velký rostoucí trh, jasná bolest (jazyky + obsah na klíč), silný lokální start v ČR.</td><td>Silný český hráč SmartGuide; závislost zákazníků na dotacích → dlouhý cyklus.</td></tr>
+      <tr><td><b>Hotely & ubytování</b></td><td><span class="score s-good">4/5</span></td><td>Jasná bolest (méně dotazů, vícejazyčnost), rychlý prodej, nízká složitost nasazení.</td><td>Přeplněný globální „guidebook" segment (Hostfully, Touch Stay).</td></tr>
+      <tr><td><b>Restaurace & vinařství</b></td><td><span class="score s-good">4/5</span></td><td>Mezera v příběhu/edukaci (ne přesycený objednávkový trh), regulační tah (alergeny), prémiové segmenty platí.</td><td>Obři (Choice/Qerko) mohou modul přidat; běžné podniky vnímají QR jako komoditu.</td></tr>
+      <tr><td><b>Školství & laboratoře</b></td><td><span class="score s-good">4/5</span></td><td>Reálná bolest, slabá vertikalizovaná konkurence, model na klíč sedí na chybějící kapacitu škol.</td><td>Nákup vázaný na dotace (dlouhý, byrokratický); substituce zdarma „QR → YouTube".</td></tr>
+      <tr><td><b>Zdravotnictví & rehabilitace</b></td><td><span class="score s-good">4/5</span></td><td>Ověřený rostoucí trh, jasná diferenciace (zero-install PWA pro seniory), kterou HEP hráči nepokrývají.</td><td><b>Regulace</b> (MDR pokud „radí" léčbu) + GDPR zdravotních dat. Pozicovat jako edukaci.</td></tr>
+      <tr><td><b>Firemní facility</b></td><td><span class="score s-mid">3/5</span></td><td>Reálná bolest a rostoucí trh; přesvědčivé hlavně u multi-pobočkových firem.</td><td>ROI nepřímý (úspora ticketů) → delší prodej; CMMS to přibalí jako feature.</td></tr>
+      <tr><td><b>Fitness & wellness</b></td><td><span class="score s-low">2,5/5</span></td><td>Reálná bolest a velký trh, ale silně obsazený.</td><td>Technogym/EGYM dodávají video „zdarma" se stroji → komoditizace, nízká ochota platit nezávislých.</td></tr>
+    </tbody>
+  </table>
+  <p class="sub" style="margin-top:12px">Pozn.: fitness byl původní inspirací, ale jako vstupní trh je nejslabší — video návod u strojů je dnes standard přibalený k vybavení. Lepší beachhead je jinde (viz Go-to-market).</p>
+</section>
+
+<!-- VERTIKALY DETAIL -->
+<section id="vertikaly">
+  <h2><span class="n">07</span>Průzkum trhu — detail dle vertikál</h2>
+  <p class="sub">Výstupy z 8 paralelních průzkumných agentů. Každá karta: kontext, bolesti, konkurence, kdo platí, příkladový scénář, skóre.</p>
+
+  <!-- VYROBA -->
+  <div class="card vcard" style="margin-bottom:18px">
+    <h3>🏭 Výroba & průmysl <span class="score s-good">4/5</span></h3>
+    <div class="meta"><span class="badge">connected worker</span><span class="badge">SOP / work instructions</span><span class="badge">nejvyšší ochota platit</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>Trh „connected worker" je velký a rychle roste: globální odhady 2025 ~10–12 mld. USD, CAGR ~14–24 %, projekce 30–58 mld. USD do 2033/34. Výroba je největší segment (~42 %). Konsolidace (SwipeGuide ← L2L, Poka ← IFS), AI je dnes standard. CZ specifikum: jeden z nejhorších nedostatků pracovníků v Evropě, silná závislost na cizojazyčných pracovnících → vícejazyčný onboarding hraje přesně do toho.</p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>Hledání SOP po sdílených discích místo přístupu „u stroje".</li>
+      <li>Pomalý onboarding operátorů a ztráta know-how odcházejících techniků.</li>
+      <li>Jazyková bariéra u bezpečnostních instrukcí.</li>
+      <li>Troubleshooting na lince bez čekání na seřizovače; auditovatelnost (LOTO, údržba).</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p>Enterprise: Tulip (no-code, free tier), Augmentir, Poka, Parsable, L2L/SwipeGuide, Dozuki, Azumuta. Safety: SafetyCulture (~24 USD/uživatel/měs). CMMS s QR/NFC: ManWinWin, Mobility Work. <b>Mezera:</b> většina je drahá, komplexní, sales-led — chybí jednoduché „naskenuj a hraje video" na klíč.</p>
+    <h4>Kdo platí</h4>
+    <p>Vedoucí výroby, plant/operations manager, kvalita/EHS, CI/lean. Enterprise účtuje ~25–100 tis. USD/rok; L2L ~150 USD/uživatel/měs. Per-user je drahé → prostor pro per-asset/per-stroj ceny stravitelné pro SMB.</p>
+    <h4>Příkladový scénář</h4>
+    <p>Výrobce 200 zaměstnanců s agenturními/cizojazyčnými operátory: NFC+QR na každém stroji → PWA s bezpečnostním briefem + LOTO, videem seřízení, troubleshooting stromem, SOP výměny nástroje — vše CZ/UK/EN. Analytika ukáže nejskenovanější (= nejproblémovější) stroje.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>4/5.</b> Velký rostoucí trh + akutní CZ bolest + jasná mezera díky jednoduchosti. <b>Riziko:</b> zavedení hráči, enterprise požadavky (bezpečnost dat, integrace, offline na dílně) a škálování service-heavy modelu (natáčení).</p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://market.us/report/connected-worker-market/">market.us</a>
+      <a href="https://www.polarismarketresearch.com/industry-analysis/connected-worker-market">polaris</a>
+      <a href="https://reliamag.com/guides/best-connected-worker-platforms-2026/">reliamag</a>
+      <a href="https://manual.to/compare/work-instruction-software-pricing/">manual.to pricing</a>
+      <a href="https://www.expats.cz/czech-news/article/czechia-labor-shortage-foreign-workers-demand-manpower">expats.cz</a>
+    </details>
+  </div>
+
+  <!-- MUZEA -->
+  <div class="card vcard" style="margin-bottom:18px">
+    <h3>🎨 Muzea, galerie & turismus <span class="score s-good">4/5</span></h3>
+    <div class="meta"><span class="badge">audio/digital guide</span><span class="badge">vícejazyčnost</span><span class="badge">dotace</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>Globální trh digital guide roste: užší „audio tour app" ~175 M USD (2025) → 300 M (2032, CAGR ~8 %); širší definice 1,4 mld. USD (2024), CAGR ~14,6 %. Evropa ~37 % tržeb. Trendy: odklon od HW k mobile-first/PWA, AI překlady, AR, self-guided okruhy. ČR: Národní galerie ~530 tis. návštěvníků/2024, Moravská galerie ~198 tis.; velké instituce digitalizují, ale stovky malých muzeí, hradů, ZOO a stezek ne — to je cílová mezera.</p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>HW audioprůvodci drazí na pořízení, údržbu, hygienu; vlastní nativní app nákladná a málo stahovaná.</li>
+      <li>Chybí vícejazyčnost a kvalitní obsah — instituce nemají kapacitu tvořit.</li>
+      <li>Malé instituce bez IT a rozpočtu → potřeba řešení na klíč; nulová data o zájmu návštěvníků.</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p><b>SmartGuide</b> (CZ původ) — PWA, QR/beacony, 30+ jazyků, AI překlad, ~€0,3–1/uživatel. Nubart (QR/PWA, €50–500/měs). xamoom, mySmartJourney, Orpheo, Locatify, GuidiGO, MyWoWo, izi.TRAVEL. Trh obsazený, ale málokdo dělá <b>plnou službu na klíč včetně natáčení videa</b> — hlavní diferenciátor.</p>
+    <h4>Kdo platí</h4>
+    <p>Ředitelé/kurátoři muzeí, marketing památek, vedení ZOO/zahrad, DMO/destinace. Rozpočty často z dotací (IROP, kraje, Norské fondy). SaaS jednotky až nižší desítky tis. Kč/rok + service fee za produkci obsahu (největší marže).</p>
+    <h4>Příkladový scénář</h4>
+    <p>Krajská ZOO: u 40 výběhů NFC+QR → tap otevře PWA s 60s videem chovatele, popisem ve 4 jazycích, mapou a „přidat do okruhu". Rodiny složí „okruh pro děti", sdílí; ZOO vidí nejskenovanější druhy. Dodavatel natočí videa a texty.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>4/5.</b> Velký rostoucí trh, jasná bolest, silný start v ČR; „natočíme za vás" odlišuje od self-service. <b>Riziko:</b> silný domácí SmartGuide a závislost na dotacích → dlouhý, cenově citlivý cyklus.</p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://www.smartguide.com/">SmartGuide</a>
+      <a href="https://www.nubart.eu/">Nubart</a>
+      <a href="https://xamoom.com/">xamoom</a>
+    </details>
+  </div>
+
+  <!-- HOTELY -->
+  <div class="card vcard" style="margin-bottom:18px">
+    <h3>🏨 Hotely & krátkodobé ubytování <span class="score s-good">4/5</span></h3>
+    <div class="meta"><span class="badge">guest experience</span><span class="badge">rychlý prodej</span><span class="badge">74 % zahr. hostů</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>Globální trh krátkodobých pronájmů ~149 mld. USD (2025), CAGR ~11 % do 2033. ČR 2024: 10 104 ubytovacích zařízení (4 255 penzionů, 1 502 ×3*, 850 ×4*), 218 tis. pokojů; přes platformy 10,7 mil. přenocování, ~74 % zahraničních hostů → silný argument pro vícejazyčnost. Trend: self check-in a bezkontaktní QR/NFC v pokojích.</p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>Opakované dotazy na recepci/hostitele (Wi-Fi, indukce, klima, sauna, check-out), noční hovory u Airbnb.</li>
+      <li>Jazyková bariéra (3 ze 4 nocí); tištěné desky nikdo nečte a zastarají.</li>
+      <li>Poškozené spotřebiče špatnou obsluhou; roztříštěné info → horší recenze.</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p>Silný „digital guidebook" segment: Touch Stay (~99 USD/rok), Hostfully (free za 1 guidebook, od 7,99 USD/měs), GoGuidebook, GuestIntro, Stay Pilot, Operto. Většina řeší <b>textový</b> průvodce — <b>video návody ke spotřebičům + NFC + služba na klíč jsou méně obsazené</b>. V ČR chybí silný lokální hráč.</p>
+    <h4>Kdo platí</h4>
+    <p>Majitelé/správci penzionů a apartmánů, property manageři, menší 3* hotely. Benchmark ~100–200 USD/objekt/rok; u portfolií méně/objekt. Služba na klíč zvyšuje cenu i marži. České penziony cenově citlivější → nižší vstup + setup.</p>
+    <h4>Příkladový scénář</h4>
+    <p>Pražský apartmán: NFC u dveří → check-in; QR na indukci → „jak zapnout"; QR u klimatizace/sauny; hlavní „uvítací" QR s Wi-Fi, řádem a tipy — vše ve 4 jazycích. Host nevolá; hostitel vidí, co se nejvíc skenuje.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>4/5.</b> Velký rostoucí trh, jasná bolest, diferenciace přes video+NFC+službu. <b>Riziko:</b> přeplněný globální segment s levnými hráči — vyhrát na jednoduchosti, lokalizaci a „uděláme to za vás".</p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://www.holidayhero.com/hostfully-vs-touchstay">Touchstay vs Hostfully</a>
+      <a href="https://www.grandviewresearch.com/industry-analysis/short-term-vacation-rental-market-report">Grand View STR</a>
+      <a href="https://csu.gov.cz/kapacity-hromadnych-ubytovacich-zarizeni">ČSÚ kapacity</a>
+      <a href="https://csu.gov.cz/online-ubytovaci-platformy">ČSÚ platformy</a>
+    </details>
+  </div>
+
+  <!-- RESTAURACE -->
+  <div class="card vcard" style="margin-bottom:18px">
+    <h3>🍽️ Restaurace, kavárny & vinařství <span class="score s-good">4/5</span></h3>
+    <div class="meta"><span class="badge">storytelling, ne QR menu</span><span class="badge">alergeny (EU 1169/2011)</span><span class="badge">prémiové segmenty</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>Trh „QR menu" je velký a rostoucí (QR menu design ~1,29 mld. USD 2024 → 4,11 mld. 2033, CAGR ~16,7 %), ~75 % restaurací QR menu zkusilo. ČR zralý: Choice QR 13 000+ podniků ve 25 zemích, Qerko 1 400+. Vysoká penetrace objednávkového QR → prostor pro odlišení směrem k <b>příběhu/edukaci</b>. Vinařství: NFC/QR smart labely pro storytelling i pravost; spotřebitelé preferují NFC tap nad QR 2:1.</p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>Povinné alergeny — restaurace nezvládají, SZPI nachází nedostatky; QR řeší aktuálnost + jazyky levně.</li>
+      <li>Jazyková bariéra s turisty; nedostatek obsluhy → host se edukuje sám.</li>
+      <li>Vinaři neumí vyprávět příběh u stolu → „winemaker jako someliér" přes video. PWA odstraní bariéru instalace.</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p>Objednávkové QR menu <b>přesycené</b>: Choice QR, Qerko, pikMenu, Yumzi, MenuTiger, Naskenuj.cz — řeší menu+platbu, ne příběh. Storytelling fragmentovaný: generátory QR + vinařské NFC smart-label firmy (jen labely/autentizace). <b>Mezera = video-first edukace + obsah na klíč.</b></p>
+    <h4>Kdo platí</h4>
+    <p>Majitelé „zážitkových" podniků: vinařství (cellar door, DTC), fine-dining, prémiové pražírny, hotely, degustační bary. Komoditní hospody mají nízkou ochotu (zvyklé na free QR) — vyhnout se jim.</p>
+    <h4>Příkladový scénář</h4>
+    <p>Moravské vinařství: NFC/QR na lahvích i stolech v degustačce → tap → 60s video vinaře o ročníku a párování + alergeny CZ/EN/DE. Oblíbené a sdílení → e-shop link. Majitel vidí, které víno táhne; tým dodá natáčení + texty.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>4/5.</b> Reálná mezera (příběh, ne přesycený objednávkový trh), platící segmenty + regulační tah (alergeny). <b>Riziko:</b> obři (Choice/Qerko) mohou modul přidat; QR vnímané jako komodita → cílit prémium + stavět na obsahu na klíč.</p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://choiceqr.com/">Choice QR</a>
+      <a href="https://www.qerko.com/">Qerko</a>
+    </details>
+  </div>
+
+  <!-- SKOLSTVI -->
+  <div class="card vcard" style="margin-bottom:18px">
+    <h3>🏫 Školství & laboratoře <span class="score s-good">4/5</span></h3>
+    <div class="meta"><span class="badge">slabá vertikalizace</span><span class="badge">BOZP</span><span class="badge">dotace</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>Dynamické QR (s analytikou) tvoří přes 55 % tržeb QR trhu (~15 mld. USD 2025, CAGR ~16 %). Ve školství v ČR jdou peníze hlavně z dotací: IROP/MMR ~3,2 mld. Kč na odborné učebny a dílny ZŠ, dále OP JAK, Národní plán obnovy, krajské programy. Dvojsečné — peníze existují, ale nákup vázán na výzvy a administrativu.</p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>Opakované zaškolování studentů na drahé přístroje (mikroskopy, 3D tisk, CNC) při vysoké fluktuaci ročníků.</li>
+      <li>Riziko poškození vybavení a úrazů; roztříštěné návody a ztráta know-how při odchodu techniků.</li>
+      <li>Bariéra instalace appky u studentů — PWA „naskenuj a běží" je reálná výhoda.</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p>Přímý ekvivalent vzácný. Vitag (US, NFC „video sticky notes" — nejbližší). SwipeGuide, SOPX, Squint, MaintainX cílí enterprise výrobu, dražší. Generické QR (Uniqode, QRCodeChimp) bez vertikalizace. <b>Hlavní „konkurent" = DIY QR → YouTube</b> (zdarma, ale bez analytiky, jazyků, služby).</p>
+    <h4>Kdo platí</h4>
+    <p>Vedoucí katedry/dílny, technik laboratoře, zástupce ředitele pro praxi, dotační manažer. Z vlastního rozpočtu nízká ochota; vysoká, pokud se vejde do dotační výzvy jako „digitální pomůcka". Model na klíč je silný — školy nemají kapacitu tvořit obsah.</p>
+    <h4>Příkladový scénář</h4>
+    <p>SPŠ/VŠ s dílnou: QR+NFC na každém stroji (CNC, 3D tiskárna, soustruh) → PWA s 3–5min videem (bezpečné spuštění, BOZP, postup, čištění) + checklist. Učitel vidí analytiku, vícejazyčně. Pilot 1 učebna (~15–25 strojů), pak roll-out přes dotaci.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>4/5.</b> Reálná bolest, slabá vertikalizovaná konkurence, model na klíč sedí na chybějící kapacitu; PWA je hmatatelná výhoda. <b>Riziko:</b> dotační cyklus (dlouhý, byrokratický) a substituce zdarma „QR → YouTube".</p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://www.mordorintelligence.com/industry-reports/qr-codes-market">Mordor QR</a>
+      <a href="https://techcrunch.com/2022/10/18/videos-on-tap-vitag-launches-nfc-powered-sticky-notes-for-visual-instructions/">TechCrunch Vitag</a>
+      <a href="https://www.dotaceeu.cz/cs/evropske-fondy-v-cr/novinky/mmr-na-lepsi-vybaveni-zakladnich-skol-mame-priprav">DotaceEU/MMR</a>
+    </details>
+  </div>
+
+  <!-- ZDRAVOTNICTVI -->
+  <div class="card vcard" style="margin-bottom:18px">
+    <h3>🏥 Zdravotnictví, rehabilitace & senioři <span class="score s-good">4/5</span></h3>
+    <div class="meta"><span class="badge">zero-install pro seniory</span><span class="badge">⚠️ MDR / GDPR</span><span class="badge">výrobci pomůcek = early adopters</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>Evropský trh digital therapeutics ~1,85 mld. USD (2023), CAGR ~23–27 %. Virtuální/telerehabilitace v Evropě k ~571 M USD do 2034 (CAGR ~19,5 %); Německo vede díky proplácení (DiGA). Tahouni: stárnutí, chronické nemoci, nedostatek personálu. ČR: poptávka po domácím cvičení s videonávody (Kinisi, fyzio-navody.cz), ale roztříštěná B2C řešení → <b>prostor pro jednoduchý B2B nástroj na klíč.</b></p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>Pacient doma zapomene cviky / dělá je špatně (papírové letáky nefungují).</li>
+      <li>Senioři nechtějí nic instalovat → PWA = nulová bariéra (klíčová výhoda).</li>
+      <li>Personál opakovaně vysvětluje obsluhu pomůcek; vícejazyčnost pro cizince/pečovatele.</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p>Exercise prescription/HEP: Physitrack (80k+ poskytovatelů), MedBridge, Theratrak, WebPT, Limber. DTx: Sword Health, Hinge Health. ČR: Kinisi, fyzio-navody.cz. <b>Žádný neřeší primárně fyzický QR/NFC trigger + nulovou instalaci</b> — to je mezera i riziko (silný hráč funkci doplní).</p>
+    <h4>Kdo platí</h4>
+    <p>Domovy seniorů, rehabilitační kliniky/ambulance, výrobci/distributoři pomůcek, lázně, nemocniční oddělení. SaaS na zařízení/pobočku (nízké tisíce Kč/měs) + jednorázové natočení. <b>Výrobci pomůcek = nejlepší early adopters</b> (návod jako přidaná hodnota k produktu).</p>
+    <h4>Příkladový scénář</h4>
+    <p>Rehabilitační klinika: firma natočí 30 videí (cviky + obsluha ortézy). Pacient při propuštění dostane kartičku s QR+NFC → doma přiloží telefon → PWA s jeho sestavou cviků, vícejazyčně, bez instalace a loginu. Fyzioterapeut vidí přehled naskenování.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>4/5.</b> Ověřený rostoucí trh, jasná diferenciace (zero-install pro seniory). <b>Riziko = regulace:</b> pokud obsah „radí" léčbu, hrozí klasifikace jako zdravotnický prostředek (EU MDR) + GDPR zdravotních dat. <b>Pozicovat jako edukaci, ne diagnostiku.</b></p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://www.grandviewresearch.com/horizon/outlook/digital-therapeutics-market/europe">Grand View EU DTx</a>
+      <a href="https://www.physitrack.com/">Physitrack</a>
+      <a href="https://www.extrahorizon.com/gdpr-software-medtech-medical-device-eu-regulation-mdr-data-privacy">GDPR & MDR</a>
+    </details>
+  </div>
+
+  <!-- FACILITY -->
+  <div class="card vcard" style="margin-bottom:18px">
+    <h3>🏢 Firemní kanceláře & facility <span class="score s-mid">3/5</span></h3>
+    <div class="meta"><span class="badge">úspora ticketů</span><span class="badge">multi-pobočky</span><span class="badge">nepřímý ROI</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>CZ facility management ~1,40 mld. USD (2025) → 1,94 mld. (2031, CAGR ~5,5 %). FM software roste dvakrát rychleji než služby: globálně ~26 mld. USD (2025) → ~82 mld. (2035, CAGR ~12 %). Trend: samoobslužná podpora snižující objem ticketů; QR/NFC „just-in-time" návody bez instalace už etablované.</p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>Opakované IT/facility tickety (zasedačky, AV, tiskárny, kávovary, klima).</li>
+      <li>Zaměstnanci nevědí „jak na to" a koho volat; vázne nástup nových lidí.</li>
+      <li>Roztříštěná dokumentace (PDF v intranetu, které nikdo nečte).</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p>CMMS s QR/NFC: UpKeep, MaintainX, Limble, Fiix, ARC Facilities — silné v work-orderech, ne v user video-onboardingu. QR-onboarding: QrTiger, Scanova, Tyfoom — bez produkce obsahu a FM-specifik. <b>Mezera:</b> nikdo nekombinuje jednoduchost (PWA, video-first pro běžného zaměstnance) + QR+NFC + „natočíme za vás".</p>
+    <h4>Kdo platí</h4>
+    <p>Facility/office manager, IT support lead, HR/workplace experience. ROI nepřímý (úspora času/ticketů). Per-location/per-asset licence + jednorázová produkce. Ochota slušná u multi-pobočkových firem s vysokou fluktuací; nízká u malých kanceláří.</p>
+    <h4>Příkladový scénář</h4>
+    <p>Korporátní sídlo, 8 pater, 25 zasedaček: NFC/QR na AV panelu, tiskárně, kávovaru → PWA s 60s videem „jak připojit notebook / spustit Teams", troubleshooting + „nahlásit závadu". Cíl: −30 % ticketů na AV a tiskárny.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>3/5.</b> Reálná bolest, rostoucí trh, ale value-prop hlavně u multi-poboček; ROI nepřímý → delší prodej. <b>Riziko:</b> nízká cena náhrady (QR→PDF/intranet zvládnou sami, nebo přibalí CMMS) → nutná diferenciace přes jednoduchost + službu.</p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://www.upkeep.com/">UpKeep</a>
+      <a href="https://www.getmaintainx.com/">MaintainX</a>
+    </details>
+  </div>
+
+  <!-- FITNESS -->
+  <div class="card vcard">
+    <h3>💪 Fitness & wellness <span class="score s-low">2,5/5</span></h3>
+    <div class="meta"><span class="badge">původní inspirace</span><span class="badge">komoditizace</span><span class="badge">nízká ochota platit</span></div>
+    <h4>Kontext & trendy</h4>
+    <p>Český fitness trh ~3 mld. Kč obratu, ~1 000–1 367 zařízení (Komora fitness). Roztříštěný: 53,7 % na jednotlivé vstupy, jen 9,3 % na členství → hodně malých nezávislých. Evropský trh fitness vybavení 11,4 mld. USD (2025) → 16,3 mld. (2033). Trend: digitalizace zážitku v klubu, QR/NFC na strojích → video, AI coaching, tlak na samoobslužnost po odlivu členů.</p>
+    <h4>Bolesti</h4>
+    <ul>
+      <li>Začátečníci se bojí strojů, cvičí špatně → úrazy a odchody.</li>
+      <li>Trenéři/recepce ztrácí čas opakovaným vysvětlováním; 24/7 provozy nemají jak instruovat.</li>
+      <li>Nesourodé QR (PDF, YouTube odkaz) bez analytiky, jazyků a značky.</li>
+    </ul>
+    <h4>Konkurence</h4>
+    <p>Silná a etablovaná: <b>Technogym Mywellness</b> (QR na strojích → video demo + AI Coach, od 2012) a <b>EGYM</b> dominují u vybavených klubů. Planet Fitness, Vigor Active mají vlastní QR video. Generické QR generátory (Uniqode, qr-code-tiger) levné DIY. Mezera: nezávislé CZ provozy bez Technogym ekosystému + lokalizace + natočení obsahu.</p>
+    <h4>Kdo platí</h4>
+    <p>Majitelé nezávislých posiloven, střední řetězce, wellness/spa, hotelová fitness. <b>Ochota platit nižší</b> — tenké marže a Technogym řeší video „zdarma" v ceně strojů. Spa/wellness/hotely zaplatí víc za prémiový zážitek.</p>
+    <h4>Příkladový scénář</h4>
+    <p>Nezávislá 24/7 posilovna bez trenéra: NFC+QR na každém stroji → 30s video (technika, varianty, nastavení), oblíbené, vlastní tréninková sestava, sdílení. Majitel vidí nejskenovanější stroje a má vícejazyčný obsah.</p>
+    <h4>Skóre & riziko</h4>
+    <p><b>2,5/5.</b> Reálná bolest a velký trh, ale silně obsazený. <b>Riziko:</b> komoditizace — QR video je už standard přibalený k vybavení (Technogym/EGYM), zákazník ho nevnímá jako samostatný SaaS.</p>
+    <details class="src"><summary>Zdroje</summary>
+      <a href="https://komorafitness.cz/pruzkum-fitness-trhu-2022/">Komora fitness</a>
+      <a href="https://www.technogym.com/en-US/mywellness/">Technogym Mywellness</a>
+      <a href="https://www.uniqode.com/blog/trending-use-cases/qr-codes-for-gyms">Uniqode gyms</a>
+    </details>
+  </div>
+</section>
+
+<!-- GTM -->
+<section id="gtm">
+  <h2><span class="n">08</span>Go-to-market — doporučené pořadí</h2>
+  <p class="sub">Ne všechny 4/5 jsou stejné. Beachhead = rychlý prodej + jasný ROI + obsah jako val. Pak expanze do segmentů s vyšší cenou a delším cyklem.</p>
+
+  <figure class="mermaid-box">
+    <pre class="mermaid">
+flowchart LR
+  P1["🥇 Fáze 1 — Beachhead<br/>Hotely / penziony + Vinařství<br/>rychlý prodej, nízká složitost,<br/>obsah na klíč prodává"]
+  P2["🥈 Fáze 2 — Vyšší hodnota<br/>Výroba / průmysl<br/>nejvyšší ochota platit,<br/>akutní CZ bolest"]
+  P3["🥉 Fáze 3 — Institucionální<br/>Muzea/turismus + Školství<br/>velký objem, ale dotační cyklus"]
+  P4["🔬 Fáze 4 — Regulované<br/>Zdravotnictví / rehabilitace<br/>až po vyřešení MDR/GDPR pozice"]
+  P1 --> P2 --> P3 --> P4
+    </pre>
+    <figcaption>Diagram 5 — Fázování trhů dle rychlosti prodeje a náročnosti, ne jen dle velikosti.</figcaption>
+  </figure>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Proč začít hotely + vinařstvím</h3>
+      <ul>
+        <li><b>Rychlý prodej</b> — majitel rozhoduje sám, krátký cyklus, žádná dotační byrokracie.</li>
+        <li><b>Obsah na klíč hned prodává</b> — nemají kapacitu tvořit videa, ocení „uděláme to za vás".</li>
+        <li><b>Vícejazyčnost</b> je tu okamžitá hodnota (74 % zahraničních hostů; turisté ve vinařstvích).</li>
+        <li><b>Vitrína</b> — hezké reference pro další segmenty.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Na co si dát pozor napříč</h3>
+      <ul>
+        <li><b>Škálování natáčení</b> — service-heavy model je val i brzda. Standardizovat produkci (šablony, šablonová videa).</li>
+        <li><b>Komoditizace QR</b> — nikdy neprodávat „QR kódy", vždy „hotové know-how u věci".</li>
+        <li><b>Offline / signál</b> — výroba a sklepy: cache PWA pro místa bez signálu.</li>
+        <li><b>Zdravotnictví</b> až po právním posouzení (MDR/GDPR) — držet edukační pozici.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b>Další kroky:</b> (1) zúžit jména na 2–3 a ověřit domény/známky · (2) jedno-stránkový pitch pro Fázi 1 (hotely/vinařství) · (3) MVP: dynamický QR+NFC → PWA přehrávač + jednoduchý CMS + základní analytika · (4) standardizovaný „content kit" pro natáčení, aby šla služba škálovat.
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="padding:0">
+    Koncept vznikl z brainstormingu + 8 paralelních průzkumných agentů (3. 6. 2026). Tržní čísla jsou odhady z veřejných zdrojů uvedených u každé vertikály — před investičním rozhodnutím ověřit. Dostupnost domén a ochranných známek nebyla testována.
+  </div>
+</footer>
+
+</div>
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'dark',
+    themeVariables:{
+      primaryColor:'#1f2347', primaryTextColor:'#e9eaf6', primaryBorderColor:'#7c5cff',
+      lineColor:'#21d4c2', fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif'
+    },
+    flowchart:{ htmlLabels:true, curve:'basis' }
+  });
+</script>
+</body>
+</html>
