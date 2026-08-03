@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Počasí ČR</title>
+<meta name="description" content="Mapa počasí České republiky z modelu ICON-D2 — denní přehled a hodinový režim.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --line: #334155;
+    --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    display: flex; flex-direction: column; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    overflow: hidden;
+  }
+
+  header {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  h1 { font-size: 16px; margin: 0 4px 0 0; font-weight: 600; letter-spacing: .2px; }
+  .days { display: flex; gap: 4px; }
+  .days button {
+    padding: 6px 14px; border: 1px solid #475569; background: transparent;
+    color: var(--text); border-radius: 6px; cursor: pointer; font: inherit; font-size: 14px;
+  }
+  .days button:hover { border-color: var(--accent); }
+  .days button[aria-pressed="true"] {
+    background: var(--accent); border-color: var(--accent); color: #0f172a; font-weight: 600;
+  }
+  .search { position: relative; }
+  #search-input {
+    width: 190px; padding: 6px 10px; border: 1px solid #475569; border-radius: 6px;
+    background: #0f172a; color: var(--text); font: inherit; font-size: 14px;
+  }
+  #search-input::placeholder { color: #64748b; }
+  #search-input:focus { outline: none; border-color: var(--accent); }
+  .search__results {
+    position: absolute; top: calc(100% + 4px); left: 0; min-width: 220px; margin: 0;
+    padding: 4px; list-style: none; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .45); z-index: 1200; display: none;
+    max-height: 320px; overflow-y: auto;
+  }
+  .search__results.visible { display: block; }
+  .search__item {
+    display: flex; align-items: baseline; gap: 8px; padding: 6px 8px;
+    border-radius: 5px; cursor: pointer; font-size: 14px;
+  }
+  .search__item:hover, .search__item[aria-selected="true"] { background: #334155; }
+  .search__tier { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .search__empty { padding: 8px; color: var(--muted); font-size: 13px; }
+
+  .meta { margin-left: auto; display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); }
+  .badge { padding: 3px 9px; border: 1px solid #475569; border-radius: 999px; white-space: nowrap; }
+
+  #banner {
+    display: none; padding: 8px 12px; background: #7f1d1d; color: #fee2e2;
+    font-size: 14px; align-items: center; gap: 12px;
+  }
+  #banner.visible { display: flex; }
+  #banner button {
+    margin-left: auto; padding: 4px 10px; border: 0; border-radius: 4px;
+    cursor: pointer; font: inherit; background: #fee2e2; color: #7f1d1d; font-weight: 600;
+  }
+
+  #map { flex: 1; min-height: 0; background: #1e293b; }
+  .leaflet-container { font-family: inherit; }
+
+  /* Obal markeru je průchozí pro myš, aby široké popisky neblokovaly mapu;
+     klikací jsou jen bublina a název. */
+  .marker-wrap { pointer-events: none; }
+  .marker { display: flex; flex-direction: column; align-items: center; }
+  .marker__badge {
+    display: flex; align-items: center; gap: 1px; padding: 2px 7px 2px 3px;
+    border-radius: 999px; background: #e2e8f0; cursor: pointer; pointer-events: auto;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, .3);
+  }
+  .marker__badge svg { width: 26px; height: 26px; }
+  .marker__temp { font-size: 13px; font-weight: 700; color: #0f172a; }
+  .marker__name {
+    font-size: 11px; font-weight: 600; color: #1e293b; margin-top: 1px;
+    white-space: nowrap; cursor: pointer; pointer-events: auto;
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff, 0 0 4px #fff;
+  }
+
+  /* Barva bubliny nese kategorii počasí, ikona uvnitř její tvar. */
+  .marker--clear   .marker__badge { background: #fde68a; }
+  .marker--partly  .marker__badge { background: #fef3c7; }
+  .marker--cloudy  .marker__badge { background: #cbd5e1; }
+  .marker--fog     .marker__badge { background: #e9e7ef; }
+  .marker--drizzle .marker__badge { background: #dbeafe; }
+  .marker--showers .marker__badge { background: #bfdbfe; }
+  .marker--rain    .marker__badge { background: #93c5fd; }
+  .marker--snow    .marker__badge { background: #cffafe; }
+  .marker--storm   .marker__badge { background: #ddd6fe; }
+  .marker--nodata  { opacity: .5; }
+  /* Skrytý popisek si přes visibility drží rozměry, takže výpočet kolizí
+     nemusí nic dočasně odkrývat a nic neproblikne. */
+  .marker--nolabel .marker__name { visibility: hidden; }
+  .marker--selected .marker__badge { outline: 2.5px solid #0284c7; outline-offset: 1px; }
+  .marker--selected .marker__name { color: #0369a1; }
+
+  #panel {
+    display: none; background: var(--panel); border-top: 1px solid var(--line);
+    padding: 10px 12px 12px;
+  }
+  #panel.visible { display: block; }
+  .panel__head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+  .panel__name { font-size: 15px; font-weight: 600; }
+  .panel__now { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; }
+  .panel__now svg { width: 28px; height: 28px; }
+  .panel__rain { color: var(--muted); font-size: 13px; }
+  #back-to-day {
+    margin-left: auto; padding: 5px 10px; border: 1px solid #475569; background: transparent;
+    color: var(--text); border-radius: 6px; cursor: pointer; font: inherit; font-size: 13px;
+  }
+  #back-to-day:hover { border-color: var(--accent); }
+  .label-narrow { display: none; }
+  #hour-slider { width: 100%; margin: 2px 0 6px; accent-color: var(--accent); }
+  .hourbars { display: flex; gap: 2px; align-items: flex-end; height: 58px; }
+  .hourbar {
+    flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+    height: 100%; padding: 0; border: 0; background: transparent; cursor: pointer;
+    border-radius: 3px 3px 0 0; font: inherit;
+  }
+  .hourbar:hover { background: rgba(148, 163, 184, .15); }
+  .hourbar__fill { width: 70%; min-height: 2px; background: #3b82f6; border-radius: 2px 2px 0 0; }
+  .hourbar--dry .hourbar__fill { background: #334155; }
+  .hourbar__label { font-size: 9px; color: var(--muted); line-height: 13px; }
+  .hourbar--active { background: rgba(56, 189, 248, .2); }
+  .hourbar--active .hourbar__label { color: var(--accent); font-weight: 700; }
+  .hourbar--missing .hourbar__fill { background: #475569; }
+
+  @media (max-width: 640px) {
+    header { gap: 8px; padding: 6px 8px; }
+    h1 { font-size: 14px; }
+    /* Na úzkém displeji se hlavička skládá do tří řádků: název + dny,
+       vyhledávání, stav. Jinak by pole i nabídka přetekly mimo obrazovku. */
+    .search { order: 2; width: 100%; }
+    #search-input { width: 100%; }
+    .search__results { left: 0; right: 0; min-width: 0; }
+    .meta { margin-left: 0; order: 3; width: 100%; }
+    .days button { padding: 5px 11px; font-size: 13px; }
+    #panel { max-height: 44vh; overflow-y: auto; }
+    .hourbar__label { font-size: 8px; }
+    .panel__name { font-size: 14px; }
+    .panel__now { font-size: 13px; }
+    /* Úhrn srážek si na úzkém displeji bere vlastní řádek, aby se hlavička
+       panelu nesmrskla a neuřízla tlačítko. */
+    .panel__rain { width: 100%; order: 5; font-size: 12px; }
+    .label-wide { display: none; }
+    .label-narrow { display: inline; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Počasí ČR</h1>
+    <div class="days" id="days"></div>
+    <div class="search">
+      <input id="search-input" type="text" placeholder="Hledat město…" autocomplete="off"
+             role="combobox" aria-expanded="false" aria-controls="search-results"
+             aria-label="Hledat město">
+      <ul class="search__results" id="search-results" role="listbox"></ul>
+    </div>
+    <div class="meta">
+      <span class="badge" id="model-badge">načítám…</span>
+      <span id="updated"></span>
+    </div>
+  </header>
+
+  <div id="banner" role="status">
+    <span id="banner-text"></span>
+    <button id="retry" type="button">Zkusit znovu</button>
+  </div>
+
+  <div id="map"></div>
+  <div id="panel"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

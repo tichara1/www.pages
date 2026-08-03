@@ -1,0 +1,6 @@
+{
+  "name": "weathercz",
+  "private": true,
+  "type": "module",
+  "description": "Deklarace ES modulu. Aplikace nema zadne zavislosti ani build krok; package.json je tu jen proto, aby Node cetl .js soubory jako ES moduly pri spousteni testu."
+}

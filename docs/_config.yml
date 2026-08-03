@@ -1,2 +1,4 @@
 exclude:
   - superpowers/plans
+  - weather/tests
+  - weather/package.json

@@ -29,6 +29,7 @@ docs/
 ├── _config.yml
 ├── reserve/            Reserve Fitness
 ├── date/               Évora — src/ is live, prototype/ is archived
+├── weather/            Počasí ČR
 ├── fitspot/            FitSpot
 ├── concept/            QR/NFC tag → PWA concept
 └── superpowers/        specs & plans — not a prototype, never in the manifest
@@ -40,7 +41,9 @@ the manifest and `_config.yml` belongs in `docs/` root.
 ## Adding a new prototype
 
 1. Create `docs/<slug>/` with an `index.html` entry point. Assets stay inside that folder — no
-   shared files across prototypes; duplication is cheaper than coupling here.
+   shared files across prototypes; duplication is cheaper than coupling here. Anything that is not
+   part of the running page (tests, `package.json`, tooling) goes into `exclude` in
+   `docs/_config.yml` so Pages does not publish it.
 2. Append an object to `docs/prototypes.json`:
 
    ```json
@@ -81,5 +84,6 @@ Superseded versions stay in the repo as `status: archived` rather than being del
 - **`docs/reserve/`** — Reserve Fitness: fitness class booking with three roles (customer, trainer, admin) switched from a strip above the device frame. State lives in a single `useStore` hook with `localStorage` persistence (`reserve.v1`). Role screens in `customer.jsx`, `trainer.jsx`, `admin.jsx`; shared UI in `shared.jsx` and `map.jsx`; `app.jsx` wires it together and mounts.
 - **`docs/date/src/`** — Évora: date-planning app, the modular rewrite. Screens in `screens/`, primitives in `ui/`, i18n + storage + export helpers in `lib/`. CZ/EN switch at runtime, `.ics` and PNG-with-QR export, persistence under `evora.v1`. Manual test checklist in `TESTING.md`, design in `docs/superpowers/specs/2026-04-29-evora-f1-design.md`.
 - **`docs/date/prototype/`** — Évora's predecessor, archived. Two monolithic files (`app.jsx` EN, `app-cz.jsx` CZ) with a flat screen-stack router (`go(screenName)` / `back()`).
+- **`docs/weather/`** — Počasí ČR: Leaflet map of Czech weather from Open-Meteo (ICON-D2, falling back to ICON-EU for the far end of day 3). Daily view shows the most severe phenomenon between 08:00 and 20:00; clicking a marker switches to an hourly mode with a 0–23 slider that redraws every marker. Plain ES modules with relative imports — **not** the Babel/JSX stack the other prototypes use. The only prototype with tests: `node --test` from `docs/weather/`, 65 cases over WMO codes, model merging, aggregation and location data. Its `package.json` exists solely for `"type": "module"` (no dependencies, nothing to install); it and `tests/` are excluded from Pages in `docs/_config.yml`. Design in `docs/superpowers/specs/2026-07-31-weathercz-design.md`, details in `docs/weather/README.md`.
 - **`docs/fitspot/`** — FitSpot: class discovery (HYROX, circuits, TRX, pilates). A single ~1.1 MB pre-bundled `index.html` with no CDN dependencies — treat it as an opaque artifact, do not hand-edit it.
 - **`docs/concept/`** — product concept for a QR/NFC sticker that opens an instructional PWA. Static document page with Mermaid diagrams, no React.

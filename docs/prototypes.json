@@ -44,6 +44,17 @@
     "updated": "2026-06-03"
   },
   {
+    "slug": "weather",
+    "title": "Počasí ČR",
+    "path": "weather/",
+    "tagline": "Mapa počasí s hodinovým režimem",
+    "description": "Denní přehled pro 74 lokalit — ikona ukazuje nejzávažnější jev mezi 8:00 a 20:00, takže odpolední bouřka nezmizí pod celodenním sluncem. Kliknutím se přepne na hodinový režim s posuvníkem 0–23 a je vidět, jak srážkové pásmo putuje republikou. Data z modelu ICON-D2 přes Open-Meteo.",
+    "tags": ["leaflet", "mapa", "počasí", "open-meteo", "es-modules"],
+    "stack": "ES moduly + Leaflet (bez buildu)",
+    "status": "active",
+    "updated": "2026-08-02"
+  },
+  {
     "slug": "evora-prototype",
     "title": "Évora — původní prototyp",
     "path": "date/prototype/",
