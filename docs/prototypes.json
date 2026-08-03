@@ -1,0 +1,57 @@
+[
+  {
+    "slug": "reserve",
+    "title": "Reserve Fitness",
+    "path": "reserve/",
+    "tagline": "Rezervace fitness lekcí ve třech rolích",
+    "description": "Klient, trenér a admin v jedné iOS aplikaci. Mapa lokalit s piny, kalendář lekcí, rezervace a odhlášení, docházka účastníků a heatmapa vytížení. Role se přepínají nahoře, stav drží localStorage.",
+    "tags": ["react", "ios", "booking", "fitness", "mapa"],
+    "stack": "React 18 + Babel standalone",
+    "status": "active",
+    "updated": "2026-04-01"
+  },
+  {
+    "slug": "evora",
+    "title": "Évora",
+    "path": "date/src/",
+    "tagline": "Naplánuj večer ve dvou, bez dohadování",
+    "description": "Plánovač rande. Průvodce od nálady přes výběr podniku po hotový program, knihovna míst s oblíbenými, export do kalendáře (.ics) a pozvánka jako PNG s QR kódem na sdílený náhled. Dvojjazyčně CZ/EN.",
+    "tags": ["react", "ios", "date", "i18n", "qr", "ics"],
+    "stack": "React 18 + Babel standalone",
+    "status": "active",
+    "updated": "2026-04-29"
+  },
+  {
+    "slug": "fitspot",
+    "title": "FitSpot",
+    "path": "fitspot/",
+    "tagline": "Objevování lekcí a HYROX tréninků",
+    "description": "Mobilní aplikace na hledání lekcí v okolí — HYROX, kruhové tréninky, TRX, pilates i fyzio. Detail lekce s fotkou a lektorem, rezervační flow. Jeden bundlovaný soubor bez závislostí.",
+    "tags": ["react", "ios", "fitness", "hyrox", "discovery"],
+    "stack": "Bundlovaný single-file (bez CDN)",
+    "status": "active",
+    "updated": "2026-06-15"
+  },
+  {
+    "slug": "concept",
+    "title": "QR/NFC tag → návodová PWA",
+    "path": "concept/",
+    "tagline": "Produktový koncept: naskenuj a hned víš",
+    "description": "Nálepka s QR a NFC nalepená na fyzickou věc otevře v telefonu web s instruktážním videem — bez instalace. Analýza trhu, segmentů a příležitostí, se scoringem a diagramy. Pracovní názvy Qido, Tapio, Knack.",
+    "tags": ["koncept", "pwa", "qr", "nfc", "mermaid", "analýza"],
+    "stack": "Statické HTML + Mermaid",
+    "status": "active",
+    "updated": "2026-06-03"
+  },
+  {
+    "slug": "evora-prototype",
+    "title": "Évora — původní prototyp",
+    "path": "date/prototype/",
+    "tagline": "První monolitická verze plánovače večera",
+    "description": "Předchůdce Évory, dva samostatné monolitické soubory pro češtinu a angličtinu. Nahradila ho modulární verze v date/src/, tady zůstává jako reference designu.",
+    "tags": ["react", "ios", "date", "archiv"],
+    "stack": "React 18 + Babel standalone",
+    "status": "archived",
+    "updated": "2026-04-20"
+  }
+]

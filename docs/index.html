@@ -1,1 +1,581 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Prototypy — tichara1</title>
+<meta name="description" content="Rozcestník interaktivních UI prototypů hostovaných na GitHub Pages."/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C3F53C'/%3E%3Crect x='11' y='7' width='10' height='18' rx='3' fill='%230A0B0D'/%3E%3C/svg%3E"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0B0D;
+  --surface: rgba(255,255,255,0.028);
+  --surface-hi: rgba(255,255,255,0.055);
+  --line: rgba(255,255,255,0.09);
+  --line-hi: rgba(255,255,255,0.18);
+  --fg: #F4F4F5;
+  --fg-muted: #A1A1AA;
+  --fg-dim: #71717A;
+  --accent: oklch(0.86 0.18 130);
+  --accent-soft: oklch(0.86 0.18 130 / 0.12);
+  --accent-line: oklch(0.86 0.18 130 / 0.32);
+  --warn: oklch(0.82 0.15 75);
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 16px;
+}
 
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Mesh pozadí */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 78% -12%, oklch(0.86 0.18 130 / 0.14), transparent 62%),
+    radial-gradient(760px 480px at -8% 6%, oklch(0.62 0.16 265 / 0.16), transparent 60%),
+    radial-gradient(620px 620px at 42% 118%, oklch(0.70 0.13 200 / 0.09), transparent 60%);
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(48px, 9vw, 96px) clamp(20px, 4vw, 40px) 80px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 14px;
+}
+
+h1 {
+  font-size: clamp(34px, 6.2vw, 58px);
+  font-weight: 800;
+  letter-spacing: -0.032em;
+  line-height: 1.04;
+  margin: 0 0 16px;
+}
+
+h1 em {
+  font-style: normal;
+  background: linear-gradient(96deg, var(--accent), oklch(0.78 0.13 195));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lede {
+  font-size: clamp(15px, 2vw, 18px);
+  color: var(--fg-muted);
+  max-width: 62ch;
+  margin: 0;
+}
+
+/* ── Ovládání ───────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: clamp(32px, 5vw, 48px) 0 14px;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.search svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--fg-dim);
+  pointer-events: none;
+}
+
+#q {
+  width: 100%;
+  padding: 14px 62px 14px 44px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 15px;
+  transition: border-color 0.16s, background 0.16s;
+}
+
+#q::placeholder { color: var(--fg-dim); }
+
+#q:focus {
+  outline: none;
+  border-color: var(--accent-line);
+  background: var(--surface-hi);
+}
+
+.search kbd {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-dim);
+  pointer-events: none;
+  transition: opacity 0.16s;
+}
+
+#q:focus ~ kbd, .search.filled kbd { opacity: 0; }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--fg-muted);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: color 0.16s, border-color 0.16s, background 0.16s;
+}
+
+.toggle:hover { color: var(--fg); border-color: var(--line-hi); }
+
+.toggle .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fg-dim);
+  transition: background 0.16s, box-shadow 0.16s;
+}
+
+.toggle[aria-pressed="true"] {
+  color: var(--fg);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.toggle[aria-pressed="true"] .dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.count {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--fg-dim);
+  margin: 0 0 26px;
+  min-height: 1.4em;
+}
+
+/* ── Grid a karty ───────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: transform 0.18s ease, border-color 0.18s, background 0.18s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--line-hi);
+  background: var(--surface-hi);
+}
+
+.card:focus-within {
+  border-color: var(--accent-line);
+  background: var(--surface-hi);
+}
+
+.card.is-archived { opacity: 0.62; }
+.card.is-archived:hover { opacity: 1; }
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.card h2 {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.card h2 a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+/* Celá karta klikatelná, tagy nad překryvem */
+.card h2 a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+
+.card h2 a:focus-visible {
+  outline: none;
+}
+
+.card h2 a:focus-visible::after {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.badge {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  white-space: nowrap;
+}
+
+.badge.wip {
+  color: var(--warn);
+  border-color: oklch(0.82 0.15 75 / 0.34);
+}
+
+.tagline {
+  color: var(--accent);
+  font-size: 13.5px;
+  font-weight: 500;
+  margin: 0 0 10px;
+}
+
+.desc {
+  color: var(--fg-muted);
+  font-size: 14px;
+  line-height: 1.62;
+  margin: 0 0 18px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 18px;
+}
+
+.tag {
+  position: relative;
+  z-index: 1;
+  padding: 3px 9px;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
+}
+
+.tag:hover {
+  color: var(--accent);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.tag:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-dim);
+}
+
+.card-foot .stack {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-foot time { flex: none; }
+
+/* ── Stavy ──────────────────────────────────────────── */
+
+.state {
+  padding: 56px 24px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+.state p { margin: 0 0 16px; }
+.state strong { color: var(--fg); font-weight: 600; }
+
+.state button {
+  padding: 10px 20px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  color: var(--accent);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.state button:hover { background: oklch(0.86 0.18 130 / 0.2); }
+
+.state code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--fg);
+}
+
+footer {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--fg-dim);
+}
+
+footer a { color: var(--fg-muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+footer a:hover { color: var(--accent); border-color: var(--accent-line); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="eyebrow">tichara1 · github pages</p>
+  <h1>Interaktivní <em>prototypy</em></h1>
+  <p class="lede">
+    Klikatelné UI koncepty a proof-of-concepty. Žádný build, žádný bundler — otevřít a zkoušet.
+  </p>
+
+  <div class="controls">
+    <div class="search" id="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>
+      </svg>
+      <input id="q" type="search" placeholder="Hledat prototyp, technologii, tag…" autocomplete="off" aria-label="Hledat mezi prototypy"/>
+      <kbd>/</kbd>
+    </div>
+    <button class="toggle" id="archived" type="button" aria-pressed="false">
+      <span class="dot" aria-hidden="true"></span> Zobrazit archivované
+    </button>
+  </div>
+
+  <p class="count" id="count" role="status" aria-live="polite"></p>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Zdroj: <a href="https://github.com/tichara1/www-pages">github.com/tichara1/www-pages</a>
+  </footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var grid = document.getElementById('grid');
+  var count = document.getElementById('count');
+  var input = document.getElementById('q');
+  var search = document.getElementById('search');
+  var archivedBtn = document.getElementById('archived');
+
+  var items = [];
+  var showArchived = false;
+
+  // Diakritika pryč, ať "evora" najde "Évora".
+  function norm(s) {
+    return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
+  function plural(n) {
+    if (n === 1) return 'prototyp';
+    if (n >= 2 && n <= 4) return 'prototypy';
+    return 'prototypů';
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function formatDate(iso) {
+    var p = String(iso).split('-');
+    return p.length === 3 ? p[2].replace(/^0/, '') + '. ' + p[1].replace(/^0/, '') + '. ' + p[0] : iso;
+  }
+
+  function matches(item, tokens) {
+    return tokens.every(function (t) { return item._haystack.indexOf(t) !== -1; });
+  }
+
+  function cardHtml(item) {
+    var badge = '';
+    if (item.status === 'archived') badge = '<span class="badge">archiv</span>';
+    else if (item.status === 'wip') badge = '<span class="badge wip">rozpracované</span>';
+
+    var tags = (item.tags || []).map(function (t) {
+      return '<button class="tag" type="button" data-tag="' + esc(t) + '">' + esc(t) + '</button>';
+    }).join('');
+
+    return '<article class="card' + (item.status === 'archived' ? ' is-archived' : '') + '">'
+      + '<div class="card-head"><h2><a href="' + esc(item.path) + '">' + esc(item.title) + '</a></h2>' + badge + '</div>'
+      + '<p class="tagline">' + esc(item.tagline) + '</p>'
+      + '<p class="desc">' + esc(item.description) + '</p>'
+      + (tags ? '<div class="tags">' + tags + '</div>' : '')
+      + '<div class="card-foot"><span class="stack">' + esc(item.stack || '') + '</span>'
+      + '<time datetime="' + esc(item.updated) + '">' + formatDate(item.updated) + '</time></div>'
+      + '</article>';
+  }
+
+  function render() {
+    var q = input.value.trim();
+    var tokens = q ? norm(q).split(/\s+/) : [];
+    search.classList.toggle('filled', q.length > 0);
+
+    var pool = items.filter(function (i) { return showArchived || i.status !== 'archived'; });
+    var hits = tokens.length ? pool.filter(function (i) { return matches(i, tokens); }) : pool;
+
+    if (!hits.length) {
+      grid.innerHTML = '<div class="state"><p>Nic neodpovídá dotazu <strong>' + esc(q) + '</strong>.</p>'
+        + '<button type="button" id="reset">Zrušit filtr</button></div>';
+      var reset = document.getElementById('reset');
+      if (reset) reset.addEventListener('click', function () { input.value = ''; render(); input.focus(); });
+    } else {
+      grid.innerHTML = hits.map(cardHtml).join('');
+    }
+
+    var hidden = items.length - pool.length;
+    count.textContent = hits.length === pool.length
+      ? pool.length + ' ' + plural(pool.length) + (hidden ? ' · ' + hidden + ' v archivu' : '')
+      : hits.length + ' z ' + pool.length;
+  }
+
+  input.addEventListener('input', render);
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && input.value) { input.value = ''; render(); }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement !== input) {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+
+  archivedBtn.addEventListener('click', function () {
+    showArchived = !showArchived;
+    archivedBtn.setAttribute('aria-pressed', String(showArchived));
+    render();
+  });
+
+  grid.addEventListener('click', function (e) {
+    var tag = e.target.closest('.tag');
+    if (!tag) return;
+    input.value = tag.dataset.tag;
+    render();
+    input.focus();
+  });
+
+  fetch('prototypes.json')
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      if (!Array.isArray(data)) throw new Error('manifest není pole');
+      items = data
+        .sort(function (a, b) { return String(b.updated).localeCompare(String(a.updated)); })
+        .map(function (i) {
+          i._haystack = norm([i.title, i.tagline, i.description, i.slug, i.stack, (i.tags || []).join(' ')].join(' '));
+          return i;
+        });
+      render();
+    })
+    .catch(function (err) {
+      count.textContent = '';
+      grid.innerHTML = '<div class="state"><p><strong>Nepodařilo se načíst prototypes.json</strong> (' + esc(err.message) + ').</p>'
+        + '<p>Stránka potřebuje HTTP server — přes <code>file://</code> prohlížeč fetch zablokuje.<br>'
+        + 'Spusť <code>npx serve docs</code> nebo <code>python3 -m http.server 8080 --directory docs</code>.</p></div>';
+    });
+})();
+</script>
+</body>
+</html>

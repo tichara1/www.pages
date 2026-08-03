@@ -8,23 +8,78 @@ A GitHub Pages static site hosted at `tichara1.github.io/www-pages/`. It contain
 
 ## Development
 
-Open any `.html` file directly in a browser — there is nothing to install or build. All dependencies (React 18, Babel standalone) are loaded from CDN at runtime.
+There is nothing to install or build, but a static HTTP server **is required** — `file://` does not
+work. The landing page `fetch`es `prototypes.json`, and the modular prototypes load `.jsx` via
+`src=`; the browser blocks both over `file://` as cross-origin.
 
-To serve locally with live-reload, any static server works:
 ```
 npx serve docs
 # or
 python3 -m http.server 8080 --directory docs
 ```
 
+All runtime dependencies (React 18, Babel standalone, fonts) come from CDN.
+
+## Layout
+
+```
+docs/
+├── index.html          landing page (rozcestník) — the ONLY page in the root
+├── prototypes.json     manifest driving the landing page
+├── _config.yml
+├── reserve/            Reserve Fitness
+├── date/               Évora — src/ is live, prototype/ is archived
+├── fitspot/            FitSpot
+├── concept/            QR/NFC tag → PWA concept
+└── superpowers/        specs & plans — not a prototype, never in the manifest
+```
+
+**One folder per prototype, entry point always `index.html`.** Nothing but the landing page,
+the manifest and `_config.yml` belongs in `docs/` root.
+
+## Adding a new prototype
+
+1. Create `docs/<slug>/` with an `index.html` entry point. Assets stay inside that folder — no
+   shared files across prototypes; duplication is cheaper than coupling here.
+2. Append an object to `docs/prototypes.json`:
+
+   ```json
+   {
+     "slug": "my-thing",
+     "title": "My Thing",
+     "path": "my-thing/",
+     "tagline": "One line, what it is",
+     "description": "Two or three sentences on what it does and what is interesting about it.",
+     "tags": ["react", "ios"],
+     "stack": "React 18 + Babel standalone",
+     "status": "active",
+     "updated": "2026-08-03"
+   }
+   ```
+
+   - `path` is relative to `docs/` and ends with `/`. Usually `<slug>/`, but it can point deeper
+     (Évora's slug is `evora` while its path is `date/src/`).
+   - `status` — `active` | `wip` | `archived`. Archived entries are hidden behind a toggle.
+   - `updated` — `YYYY-MM-DD`. Cards are sorted by this, descending.
+   - `tags` are searchable and clickable; keep them lowercase and reuse existing ones.
+3. Do **not** edit `index.html` — it renders whatever the manifest contains. Touch it only when
+   changing the hub's own design or behaviour.
+4. Verify: serve `docs/`, confirm the card appears and its link resolves.
+
+Superseded versions stay in the repo as `status: archived` rather than being deleted.
+
 ## Architecture
 
 **Zero-build stack:** JSX files are loaded as `<script type="text/babel">` and transpiled in the browser by Babel standalone. This means edits to `.jsx` files are reflected immediately on page reload — no compile step.
 
-**Component/global injection pattern:** `ios-frame.jsx` renders iOS device chrome and assigns components to `window` (`IOSDevice`, `IOSStatusBar`, etc.). App JSX files assign their root component to `window.App`. The inline `<script>` at the bottom of each HTML file reads from `window` to mount the app. Script load order in the HTML is significant.
+**Component/global injection pattern:** `ios-frame.jsx` renders iOS device chrome and assigns components to `window` (`IOSDevice`, `IOSStatusBar`, etc.). Script load order in the HTML is significant — the last script mounts the app into `#root`.
 
-**Two prototypes:**
-- `docs/` — Reserve Fitness: a fitness class booking app with three roles (customer, trainer, admin). State is managed via a single `useStore` hook with `localStorage` persistence (`reserve.v1`). Role-specific screens live in `customer.jsx`, `trainer.jsx`, `admin.jsx`; shared UI in `shared.jsx` and `map.jsx`.
-- `docs/date/prototype/` — Évora: a date-planning app. `app.jsx` is the English version; `app-cz.jsx` is the Czech version. Both use a flat screen-stack router (`go(screenName)` / `back()`). Design tokens are defined at the top of each app file (`C` for colors, `F` for fonts).
+**Responsive scaling:** The mount script reads viewport dimensions and applies a CSS `scale()` transform to fit the 402×874 iOS device frame within the window.
 
-**Responsive scaling:** The HTML mount script reads viewport dimensions and applies a CSS `scale()` transform to fit the 402×874 iOS device frame within the window.
+### The prototypes
+
+- **`docs/reserve/`** — Reserve Fitness: fitness class booking with three roles (customer, trainer, admin) switched from a strip above the device frame. State lives in a single `useStore` hook with `localStorage` persistence (`reserve.v1`). Role screens in `customer.jsx`, `trainer.jsx`, `admin.jsx`; shared UI in `shared.jsx` and `map.jsx`; `app.jsx` wires it together and mounts.
+- **`docs/date/src/`** — Évora: date-planning app, the modular rewrite. Screens in `screens/`, primitives in `ui/`, i18n + storage + export helpers in `lib/`. CZ/EN switch at runtime, `.ics` and PNG-with-QR export, persistence under `evora.v1`. Manual test checklist in `TESTING.md`, design in `docs/superpowers/specs/2026-04-29-evora-f1-design.md`.
+- **`docs/date/prototype/`** — Évora's predecessor, archived. Two monolithic files (`app.jsx` EN, `app-cz.jsx` CZ) with a flat screen-stack router (`go(screenName)` / `back()`).
+- **`docs/fitspot/`** — FitSpot: class discovery (HYROX, circuits, TRX, pilates). A single ~1.1 MB pre-bundled `index.html` with no CDN dependencies — treat it as an opaque artifact, do not hand-edit it.
+- **`docs/concept/`** — product concept for a QR/NFC sticker that opens an instructional PWA. Static document page with Mermaid diagrams, no React.
