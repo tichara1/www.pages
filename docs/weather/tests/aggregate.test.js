@@ -22,10 +22,31 @@ test('forecastDates vrací data v pořadí bez duplicit', () => {
   assert.deepEqual(forecastDates(s), ['2026-07-31', '2026-08-01']);
 });
 
-test('dayAggregate počítá průměr teploty jen z hodin 8 až 20', () => {
+test('dayAggregate počítá vážený průměr teploty jen z hodin 8 až 20', () => {
   const agg = dayAggregate(buildDay('2026-07-31'), '2026-07-31');
-  // Průměr 8..20 včetně = (8+9+...+20)/13 = 14
-  assert.equal(agg.temperature, 14);
+  // Vážený součet = 8*1 + (9+10+11)*2 + (12+..+15)*3 + (16+17)*1.5 + (18+19+20)*1 = 336.5
+  // Součet vah = 1 + 6 + 12 + 3 + 3 = 25 → 13.46
+  assert.equal(agg.temperature, 13);
+});
+
+test('dayAggregate dá odpoledni větší váhu než dopoledni', () => {
+  const temp = Array(24).fill(10);
+  for (let h = 12; h < 16; h += 1) temp[h] = 20;
+  const agg = dayAggregate(buildDay('2026-07-31', { temp }), '2026-07-31');
+  // Prostý průměr by byl 13, vážený = (20*12 + 10*13) / 25 = 14.8
+  assert.equal(agg.temperature, 15);
+});
+
+test('dayAggregate dá podvečeru 16 až 18 větší váhu než pozdnímu večeru', () => {
+  const podvecer = Array(24).fill(0);
+  podvecer[16] = 100;
+  podvecer[17] = 100;
+  const vecer = Array(24).fill(0);
+  vecer[19] = 100;
+  vecer[20] = 100;
+
+  assert.equal(dayAggregate(buildDay('2026-07-31', { temp: podvecer }), '2026-07-31').temperature, 12);
+  assert.equal(dayAggregate(buildDay('2026-07-31', { temp: vecer }), '2026-07-31').temperature, 8);
 });
 
 test('dayAggregate vybere nejzávažnější jev v okně, i když trvá hodinu', () => {
@@ -70,8 +91,8 @@ test('dayAggregate počítá z dostupných hodin, když část chybí', () => {
   }
   const agg = dayAggregate(s, '2026-07-31');
   assert.equal(agg.hasData, true);
-  // Zbývají hodiny 8..14, průměr = 11
-  assert.equal(agg.temperature, 11);
+  // Zbývají hodiny 8..14: (8*1 + (9+10+11)*2 + (12+13+14)*3) / 16 = 11.56
+  assert.equal(agg.temperature, 12);
 });
 
 test('dayAggregate hlásí hasData false, když okno nemá žádná data', () => {
@@ -96,7 +117,7 @@ test('dayAggregate nepoplete dny se stejnými hodinami', () => {
     precipitation: [...den1.precipitation, ...den2.precipitation],
     source: [...den1.source, ...den2.source],
   };
-  assert.equal(dayAggregate(spojeno, '2026-07-31').temperature, 14);
+  assert.equal(dayAggregate(spojeno, '2026-07-31').temperature, 13);
   assert.equal(dayAggregate(spojeno, '2026-08-01').temperature, 30);
 });
 

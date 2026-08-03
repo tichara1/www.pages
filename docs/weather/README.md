@@ -6,8 +6,12 @@ plus hodinový režim, ve kterém je vidět, kdy kde prší.
 ## Jak to funguje
 
 **Denní přehled** ukazuje pro každé město ikonu **nejzávažnějšího jevu mezi 8:00 a 20:00**
-a průměrnou teplotu téhož okna. Krátká odpolední bouřka se tak neschová pod celodenní
+a **vážený průměr teploty** téhož okna. Krátká odpolední bouřka se tak neschová pod celodenní
 slunce — když někde v 18:00 přijde bouřka, uvidíš ji na mapě, i kdyby byl zbytek dne jasný.
+
+Teplota se váží podle toho, kdy je den nejvíc „vidět“: 12–16 má váhu 3, 9–12 váhu 2,
+16–18 váhu 1,5 a 8–9 s 18–20 váhu 1. Chladné ráno tak nestáhne teplé odpoledne dolů.
+Výběr ikony vážený není — nejzávažnější jev v okně platí bez ohledu na hodinu.
 
 Území ČR je vymezené obrysem hranice a okolí je ztlumené clonou, takže je hned
 zřejmé, kam se předpověď vztahuje.

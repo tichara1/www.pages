@@ -38,6 +38,11 @@ docs/
 **One folder per prototype, entry point always `index.html`.** Nothing but the landing page,
 the manifest and `_config.yml` belongs in `docs/` root.
 
+**Developer documentation is not published.** `docs/_config.yml` excludes `superpowers/` along
+with every README, test suite and helper script that is not part of a running page. The files stay
+in the repo and are readable on GitHub; they just never reach the Pages site. Note that a Jekyll
+`exclude:` list replaces the defaults rather than extending them.
+
 ## Adding a new prototype
 
 1. Create `docs/<slug>/` with an `index.html` entry point. Assets stay inside that folder — no
@@ -84,6 +89,6 @@ Superseded versions stay in the repo as `status: archived` rather than being del
 - **`docs/reserve/`** — Reserve Fitness: fitness class booking with three roles (customer, trainer, admin) switched from a strip above the device frame. State lives in a single `useStore` hook with `localStorage` persistence (`reserve.v1`). Role screens in `customer.jsx`, `trainer.jsx`, `admin.jsx`; shared UI in `shared.jsx` and `map.jsx`; `app.jsx` wires it together and mounts.
 - **`docs/date/src/`** — Évora: date-planning app, the modular rewrite. Screens in `screens/`, primitives in `ui/`, i18n + storage + export helpers in `lib/`. CZ/EN switch at runtime, `.ics` and PNG-with-QR export, persistence under `evora.v1`. Manual test checklist in `TESTING.md`, design in `docs/superpowers/specs/2026-04-29-evora-f1-design.md`.
 - **`docs/date/prototype/`** — Évora's predecessor, archived. Two monolithic files (`app.jsx` EN, `app-cz.jsx` CZ) with a flat screen-stack router (`go(screenName)` / `back()`).
-- **`docs/weather/`** — Počasí ČR: Leaflet map of Czech weather from Open-Meteo (ICON-D2, falling back to ICON-EU for the far end of day 3). Daily view shows the most severe phenomenon between 08:00 and 20:00; clicking a marker switches to an hourly mode with a 0–23 slider that redraws every marker. Plain ES modules with relative imports — **not** the Babel/JSX stack the other prototypes use. The only prototype with tests: `node --test` from `docs/weather/`, 65 cases over WMO codes, model merging, aggregation and location data. Its `package.json` exists solely for `"type": "module"` (no dependencies, nothing to install); it and `tests/` are excluded from Pages in `docs/_config.yml`. Design in `docs/superpowers/specs/2026-07-31-weathercz-design.md`, details in `docs/weather/README.md`.
+- **`docs/weather/`** — Počasí ČR: Leaflet map of Czech weather from Open-Meteo (ICON-D2, falling back to ICON-EU for the far end of day 3). Daily view shows the most severe phenomenon between 08:00 and 20:00 and a *weighted* mean temperature for the same window (12–16 counts 3×, 9–12 2×, 16–18 1.5×, the rest 1×) so a cold morning cannot drag a warm afternoon down — the icon is never weighted. Clicking a marker switches to an hourly mode with a 0–23 slider that redraws every marker. Plain ES modules with relative imports — **not** the Babel/JSX stack the other prototypes use. The only prototype with tests: `node --test` from `docs/weather/`, 67 cases over WMO codes, model merging, aggregation and location data. Its `package.json` exists solely for `"type": "module"` (no dependencies, nothing to install). Design in `docs/superpowers/specs/2026-07-31-weathercz-design.md`, details in `docs/weather/README.md`.
 - **`docs/fitspot/`** — FitSpot: class discovery (HYROX, circuits, TRX, pilates). A single ~1.1 MB pre-bundled `index.html` with no CDN dependencies — treat it as an opaque artifact, do not hand-edit it.
 - **`docs/concept/`** — product concept for a QR/NFC sticker that opens an instructional PWA. Static document page with Mermaid diagrams, no React.

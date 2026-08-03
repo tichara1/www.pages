@@ -6,6 +6,15 @@ import { severityOf } from './wmo.js';
 export const DAY_START = 8;
 export const DAY_END = 20; // včetně
 
+// Váha hodiny v denním průměru teploty. Odpoledne rozhoduje, jak den vyzní,
+// ráno a pozdní večer jen dokresluje.
+function weightOf(hour) {
+  if (hour >= 12 && hour < 16) return 3;
+  if (hour >= 9 && hour < 12) return 2;
+  if (hour >= 16 && hour < 18) return 1.5;
+  return 1;
+}
+
 const dateOf = (t) => t.slice(0, 10);
 const hourOf = (t) => Number(t.slice(11, 13));
 
@@ -39,18 +48,21 @@ export function dayAggregate(series, date) {
 
   let worst = series.weatherCode[indexes[0]];
   let sumTemp = 0;
+  let sumWeight = 0;
   let sumPrec = 0;
 
   for (const i of indexes) {
     const code = series.weatherCode[i];
     if (severityOf(code) > severityOf(worst)) worst = code;
-    sumTemp += series.temperature[i];
+    const weight = weightOf(hourOf(series.time[i]));
+    sumTemp += series.temperature[i] * weight;
+    sumWeight += weight;
     sumPrec += series.precipitation[i] ?? 0;
   }
 
   return {
     weatherCode: worst,
-    temperature: Math.round(sumTemp / indexes.length),
+    temperature: Math.round(sumTemp / sumWeight),
     precipitation: Math.round(sumPrec * 10) / 10,
     hasData: true,
   };

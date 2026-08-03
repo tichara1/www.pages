@@ -1,4 +1,10 @@
+# Nastavení kompletně přepisuje Jekyll defaulty, ne doplňuje je.
+# Sem patří všechno, co je vývojářská dokumentace nebo nástroj — do publikovaného
+# webu smí jen to, co je součástí běžící stránky.
 exclude:
-  - superpowers/plans
+  - superpowers          # specs & plans
+  - date/src/TESTING.md
+  - date/src/serve.sh
+  - weather/README.md
   - weather/tests
   - weather/package.json
