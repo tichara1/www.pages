@@ -55,6 +55,17 @@
     "updated": "2026-08-02"
   },
   {
+    "slug": "jidelnicek",
+    "title": "Jídelníček",
+    "path": "jidelnicek/",
+    "tagline": "Osmitýdenní plán jídel s nákupním seznamem",
+    "description": "Denní „ticket“ s jídly, makry a odškrtáváním, čtyři týdenní menu, která se opakují v týdnech 5–8. Ke každému receptu suroviny, postup a převod syrové váhy na uvařenou. Nákupní seznam na týden se dá zkopírovat do poznámek, celý plán vytisknout do PDF. Stav drží localStorage.",
+    "tags": ["jídlo", "plán", "nákup", "pdf", "vanilla-js"],
+    "stack": "Statické HTML + vanilla JS (bez buildu)",
+    "status": "active",
+    "updated": "2026-08-20"
+  },
+  {
     "slug": "evora-prototype",
     "title": "Évora — původní prototyp",
     "path": "date/prototype/",

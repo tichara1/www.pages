@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jídelníček — cíl: břišáky</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F6F2; --card:#FFFFFF; --ink:#1D2420; --muted:#6E7A72;
+  --green:#2E6B4E; --green-soft:#E4EFE8; --amber:#DFA31F; --amber-soft:#FBF2DC;
+  --line:#DDE4DE; --danger:#B4552F;
+  --disp:'Barlow Condensed',system-ui,sans-serif;
+  --body:'Inter',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.5;padding-bottom:60px}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;padding:10px 14px 0;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.h-top{display:flex;align-items:baseline;justify-content:space-between;max-width:860px;margin:0 auto}
+.h-top h1{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:.5px;text-transform:uppercase}
+.h-top .goal{font-size:12px;color:#AEC3B6}
+.h-right{display:flex;align-items:center;gap:10px}
+.save-btn{background:var(--amber);color:#1D2420;border:none;border-radius:8px;font-weight:700;font-size:13px;padding:7px 12px}
+.reset-wrap{text-align:center;margin:28px 0 6px}
+.reset-big{background:none;border:2px solid var(--danger);color:var(--danger);border-radius:10px;font-weight:700;font-size:14px;padding:10px 18px}
+.reset-note{font-size:12px;color:var(--muted);margin-top:8px}
+.tabs{display:flex;gap:6px;max-width:860px;margin:8px auto 0}
+.tab{flex:1;background:transparent;border:none;color:#AEC3B6;font-family:var(--disp);font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:8px 0 10px;border-bottom:3px solid transparent}
+.tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--amber)}
+main{max-width:860px;margin:0 auto;padding:14px}
+
+/* ---------- ticket (dnes) ---------- */
+.ticket{background:var(--card);border-radius:14px;box-shadow:0 6px 18px rgba(29,36,32,.08);margin-bottom:18px;overflow:hidden}
+.ticket-head{padding:14px 16px 10px;border-bottom:2px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.ticket-head .day{font-family:var(--disp);font-size:24px;font-weight:700;text-transform:uppercase}
+.badge{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+.badge.train{background:var(--amber-soft);color:#8A6410}
+.badge.rest{background:var(--green-soft);color:var(--green)}
+.gauges{padding:12px 16px;display:grid;gap:10px;border-bottom:2px dashed var(--line)}
+.gauge label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.gauge label b{color:var(--ink);font-variant-numeric:tabular-nums}
+.bar{height:10px;background:var(--paper);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green);border-radius:999px;transition:width .35s ease}
+.bar.kcal i.over{background:var(--danger)}
+.hint{padding:8px 16px 12px;font-size:12.5px;color:var(--muted)}
+
+/* ---------- meal rows ---------- */
+.meals{list-style:none}
+.meal{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.meal:last-child{border-bottom:none}
+.meal input[type=checkbox]{width:21px;height:21px;accent-color:var(--green);flex-shrink:0}
+.meal-btn{flex:1;text-align:left;background:none;border:none;padding:0;display:block}
+.meal-btn .slot{font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.meal-btn .nm{font-weight:600;font-size:14.5px;color:var(--ink)}
+.meal-btn .nm .arrow{color:var(--green);font-weight:700}
+.macro{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted);text-align:right;flex-shrink:0;line-height:1.3}
+.macro b{color:var(--ink);font-size:13px}
+.meal.done .nm{color:var(--muted);text-decoration:line-through}
+.note-row{padding:9px 14px;font-size:12.5px;background:var(--amber-soft);color:#7A5A0E;font-weight:500}
+.timing{padding:8px 16px;font-size:12px;background:var(--green-soft);color:var(--green);border-bottom:2px dashed var(--line);font-weight:500;line-height:1.45}
+.lsw{display:flex;gap:8px;align-items:center;padding:9px 14px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);cursor:pointer}
+.lsw input{width:18px;height:18px;accent-color:var(--amber)}
+.water-row{display:flex;gap:8px;align-items:center}
+.wbtn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+
+/* ---------- week grid ---------- */
+h2.sec{font-family:var(--disp);font-size:21px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px}
+.daycard{background:var(--card);border-radius:12px;border:1px solid var(--line);margin-bottom:12px;overflow:hidden}
+.daycard>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;font-family:var(--disp);font-size:18px;font-weight:600;text-transform:uppercase}
+.daycard>summary::-webkit-details-marker{display:none}
+.daycard>summary .chev{transition:transform .2s;color:var(--muted)}
+.daycard[open]>summary .chev{transform:rotate(90deg)}
+.daycard[open]>summary{border-bottom:1px solid var(--line)}
+.daycard.today{border:2px solid var(--green)}
+.dleft{display:flex;align-items:center;gap:9px}
+.daychk{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}
+.daycard.done>summary .dname{text-decoration:line-through;color:var(--muted)}
+.week-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wk-check{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:pointer}
+.wk-check input{width:20px;height:20px;accent-color:var(--green)}
+#weekTitle.done{text-decoration:line-through;color:var(--muted)}
+.tab.done{color:#7BC29A;text-decoration:line-through}
+.tab.done[aria-selected="true"]{color:#A8E6C3}
+.sumr{display:flex;align-items:center;gap:10px}
+.dk{font-family:var(--body);font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0}
+
+/* ---------- shopping ---------- */
+.shop{background:var(--card);border-radius:12px;border:1px solid var(--line);padding:14px}
+.shop-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.copy-btn{background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;padding:8px 12px}
+.shop ul{list-style:none;columns:2;column-gap:18px;margin-bottom:4px}
+.shop-cat{font-family:var(--disp);font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--green);margin:12px 0 5px;border-bottom:1px solid var(--line);padding-bottom:3px}
+@media (max-width:560px){.shop ul{columns:1}}
+.shop li{break-inside:avoid;padding:4px 0;font-size:14px;display:flex;gap:8px;align-items:center}
+.shop input{width:18px;height:18px;accent-color:var(--green)}
+.shop li.got span{color:var(--muted);text-decoration:line-through}
+
+/* ---------- rules ---------- */
+.rules{background:var(--card);border-radius:12px;border:1px solid var(--line);padding:14px 16px}
+.rules li{margin:0 0 8px 18px;font-size:14px}
+
+/* ---------- modal ---------- */
+dialog{border:none;border-radius:16px;padding:0;max-width:560px;width:calc(100% - 28px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(20,26,22,.55)}
+.m-head{background:var(--ink);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.m-head h3{font-family:var(--disp);font-size:23px;font-weight:700;text-transform:uppercase;line-height:1.1}
+.m-close{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:8px;width:34px;height:34px;font-size:17px;flex-shrink:0}
+.chips{display:flex;gap:6px;padding:12px 18px 0;flex-wrap:wrap}
+.chip{background:var(--green-soft);color:var(--green);font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;font-variant-numeric:tabular-nums}
+.chip.k{background:var(--amber-soft);color:#8A6410}
+.m-body{padding:12px 18px 18px}
+.m-body h4{font-family:var(--disp);font-size:16px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:12px 0 6px}
+.ing{list-style:none}
+.ing li{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.ing li b{font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:12px}
+.cook{display:block;font-size:11.5px;color:var(--muted);font-weight:400}
+.cook-note{font-size:12px;color:var(--muted);margin:2px 0 6px}
+.steps{margin-left:18px}
+.steps li{margin-bottom:6px;font-size:14px}
+.scaler{display:flex;align-items:center;gap:8px;margin-top:4px}
+.scaler span{font-size:13px;color:var(--muted)}
+.scaler button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:17px;font-weight:700}
+.scaler b{font-variant-numeric:tabular-nums;min-width:60px;text-align:center}
+
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:600;transition:transform .3s;z-index:99}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.reset{background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:12px;padding:6px 10px}
+.pdf-btn{background:#fff}
+#printView{display:none}
+@media print{
+  header,main,.toast,dialog{display:none!important}
+  body{background:#fff;padding:0}
+  #printView{display:block;font-family:var(--body);color:#000}
+  #printView h1{font-family:var(--disp);font-size:18px;text-transform:uppercase;margin:0 0 1mm}
+  .pmeta{font-size:9px;color:#333;margin:0 0 3mm;line-height:1.4}
+  #printView h3{font-family:var(--disp);font-size:13px;text-transform:uppercase;margin:4mm 0 1.5mm;border-bottom:1px solid #000;break-after:avoid}
+  .pt{width:100%;border-collapse:collapse;font-size:8.5px;margin:0 0 2mm}
+  .pt th,.pt td{border:.5px solid #999;padding:1px 3px;text-align:left}
+  .pt th{background:#eee}
+  .pcols{columns:2;column-gap:5mm}
+  .pr{break-inside:avoid;margin:0 0 2mm;padding:1.5mm 2mm;border:.5px solid #bbb;border-radius:2px}
+  .pr h4{font-size:9.5px;margin:0 0 .5mm}
+  .pr h4 span{font-weight:400;color:#444;font-size:8px}
+  .pi{font-size:8.5px;color:#222;margin:0 0 .5mm}
+  .ps{font-size:8.5px;margin:0}
+  .pshop{font-size:8px;color:#222;margin:1mm 0 2mm;line-height:1.45}
+  @page{margin:10mm}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-top">
+    <h1>Jídelníček</h1>
+    <div class="h-right"><span class="goal">cíl ~93 kg</span><button class="save-btn pdf-btn" onclick="exportPDF()">🖨️ PDF</button><button class="save-btn" onclick="saveState()">💾 Uložit</button></div>
+  </div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+</header>
+
+<main>
+  <section class="ticket" id="ticket"></section>
+
+  <div class="week-head">
+    <h2 class="sec" id="weekTitle"></h2>
+    <label class="wk-check"><input type="checkbox" id="wkAll" onchange="toggleWeek()"> Celý týden ✓</label>
+  </div>
+  <div id="days"></div>
+
+  <h2 class="sec">Nákup na týden</h2>
+  <div class="shop" id="shop"></div>
+
+  <h2 class="sec">Vitamíny a minerály</h2>
+  <ol class="rules">
+    <li><b>Plán kryje:</b> vápník (tvaroh, jogurt), omega‑3 (ryba 2× týdně), vlákninu (vločky, fazole, žitný chléb), draslík (brambory, banán), vitamin C (kiwi, paprika, mražená zelenina — mražení vitamíny drží), B12, železo a zinek (maso, vejce).</li>
+    <li><b>Vitamin D</b> je jediná reálná díra — zvaž doplněk 1000–2000 IU denně, od října do dubna prakticky nutnost.</li>
+    <li><b>Hořčík:</b> vločky, ořechy a fazole ho kryjí; při nočních křečích po tréninku zvaž 200–300 mg večer.</li>
+    <li><b>Jód:</b> používej jodizovanou sůl, mořská ryba 1× týdně to dorovná.</li>
+    <li><b>Střídej barvy zeleniny</b> — každá barva nese jiné mikroživiny; mražené mixy to řeší samy od sebe.</li>
+    <li><b>Minimum denně:</b> zelenina 400 g, ovoce 2 porce. V plánu je, jen to nevynechávej.</li>
+  </ol>
+
+  <h2 class="sec">Pravidla</h2>
+  <ol class="rules">
+    <li><b>Bílkovina v každém jídle.</b> Maso 200 g syrové, tvaroh/skyr 250–300 g.</li>
+    <li><b>Přílohy 90 g suché váhy</b> (rýže, těstoviny), brambory 300 g. První 2 týdny všechno važ.</li>
+    <li><b>Rychlý převod, když vážíš až hotové:</b> rýže 90 g suchá ≈ 250 g uvařená · těstoviny 90 g ≈ 215 g · rýžové nudle 90 g ≈ 225 g · maso ztrácí ~25–30 % (200 g syrové ≈ 145–150 g hotové) · ryba ~20 % · vařené brambory ≈ stejně.</li>
+    <li><b>Olej lžičkou</b> (5 g) — nejsnadněji podceněná položka dne.</li>
+    <li><b>Zelenina bez počítání</b>, výjimka: kukuřice, hrášek, fazole.</li>
+    <li><b>Pití:</b> voda, káva, čaj. Alkohol max 2 piva o víkendu → ten den vynech přílohu u večeře.</li>
+    <li><b>Váha denně ráno</b>, počítá se týdenní průměr. &lt; 0,8 kg za 2 týdny → uber 150 kcal.</li>
+    <li><b>Kroky 9–10k denně</b>, kardio 1–2× týdně bonus.</li>
+    <li><b>InBody po 4 týdnech:</b> cíl −1,5 až −2 kg, tuk ↓, svaly ±0.</li>
+    <li><b>Týdny 5–8:</b> když týdenní průměr váhy stojí 14 dní, uber 150 kcal (ořechy na 10 g, olej o lžičku míň) nebo přidej 1× kardio navíc. Neubírej bílkoviny.</li>
+    <li><b>Milníky:</b> start 98,6 kg → týden 4 ~96,5 → týden 8 ~94,5 kg. Břišáky se začínají rýsovat kolem 12 % tuku — horní dřív, spodní naposled.</li>
+  </ol>
+
+  <div class="reset-wrap">
+    <button class="reset-big" onclick="resetAll()">🔄 Resetovat celý plán</button>
+    <p class="reset-note">Smaže všechna zaškrtnutí (jídla, nákupy, lehčí večeře) — dalších 8 týdnů začneš s čistým štítem.</p>
+  </div>
+</main>
+
+<dialog id="modal">
+  <div class="m-head"><h3 id="mName"></h3><button class="m-close" id="mClose" aria-label="Zavřít">✕</button></div>
+  <div class="chips" id="mChips"></div>
+  <div class="m-body" id="mBody"></div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+<div id="printView"></div>
+
+<script>
+/* ================= DATA ================= */
+const M = {}; // meals by id
+function meal(id,name,k,b,s,t,ing,steps,batch){M[id]={id,name,k,b,s,t,ing,steps,batch};}
+
+/* --- základ --- */
+meal('snA','Ovesná kaše s tvarohem a ovocem',630,36,70,20,
+ [['Ovesné vločky',60,'g'],['Tvaroh / řecký jogurt / skyr',200,'g'],['Ovoce (banán / 2 kiwi / hrst švestek / jablko)',1,'porce'],['Ořechy',20,'g'],['Skořice',0,'dle chuti']],
+ ['Vločky povař 3 minuty s vodou nebo mlékem.','Mimo plotnu vmíchej tvaroh, navrch ovoce a ořechy.','Slaná varianta: místo ovoce hrst mražené zeleniny a vejce — makra sedí taky.']);
+meal('snB','Vejce s chlebem',560,36,46,27,
+ [['Vejce',4,'ks'],['Žitný chléb',2,'plátky'],['Rajče / paprika',1,'ks'],['Pažitka, sůl',0,'']],
+ ['Míchaná: rozšlehej a udělej na kapce oleje.','Nebo natvrdo (uvař klidně zásobu na 2–3 dny), nakrájej na chléb, osol, pažitka.']);
+meal('svT','Protein + banán',215,25,28,2,
+ [['Protein (syrovátkový)',30,'g'],['Banán',1,'ks']],
+ ['Shake s vodou, banán k tomu. Ideálně kolem tréninku.']);
+meal('svN','Protein + jablko',195,25,22,2,
+ [['Protein',30,'g'],['Jablko',1,'ks']],
+ ['Shake s vodou, jablko k tomu.']);
+meal('noc','Tvaroh před spaním',140,17,6,3,
+ [['Tvaroh polotučný',150,'g'],['Kakao / skořice',0,'lžička']],
+ ['Rozmíchej, sněz 30–60 min před spaním. Kasein drží sytost i svaly přes noc.']);
+meal('lgt','Lehká večeře — tvarohová mísa se zeleninou',370,38,20,9,
+ [['Tvaroh',250,'g'],['Zelenina / mražený mix',300,'g'],['Dýňová semínka',10,'g'],['Sůl, pepř, pažitka',0,'']],
+ ['Zeleninu spař nebo prohřej na pánvi, tvaroh dochuť solí a pažitkou.','Alternativa se stejnými makry: řecký jogurt 250 g + okurka + semínka.']);
+meal('volny','Volný oběd (rodina / zbytky)',700,45,60,25,
+ [['Doporučení: maso + příloha + zelenina',0,'']],
+ ['Neřeš gramy — vyber bílkovinu s přílohou, vynech smažené a dezert.','Orientačně se drž velikosti porcí ze všedních obědů.']);
+
+/* --- T1 česká --- */
+meal('w1l1','Kuřecí stehna na paprice',700,59,74,16,
+ [['Kuřecí stehenní řízky',750,'g'],['Cibule',1,'ks'],['Sladká paprika',1,'lžíce'],['Bílý jogurt',150,'g'],['Olej',10,'g'],['Rýže (suchá)',270,'g']],
+ ['Cibuli orestuj na oleji, přidej papriku a hned maso.','Osol, podlij vodou, přikryté dus 25 min.','Mimo plotnu vmíchej jogurt. Rýži uvař zvlášť a rozděl na 3 porce.'],3);
+meal('w1l2','Český chilli s bramborami',720,55,72,21,
+ [['Mleté hovězí 10 %',600,'g'],['Červené fazole (konzerva)',240,'g'],['Krájená rajčata (konzerva)',400,'g'],['Cibule',1,'ks'],['Česnek',2,'stroužky'],['Paprika + kmín',0,''],['Brambory',900,'g']],
+ ['Maso orestuj s cibulí a česnekem dosucha.','Přidej fazole, rajčata, koření — 15 min poduste.','Brambory uvař ve slupce, rozděl na 3 porce.'],3);
+meal('w1d1','Kuřecí s rýží a brokolicí',670,59,76,12,
+ [['Kuřecí prsa',200,'g'],['Rýže (suchá)',90,'g'],['Brokolice',200,'g'],['Olej',7,'g']],
+ ['Rýži vař 12 min, brokolici hoď posledních 5 min do stejného hrnce.','Kuřecí nudličky prudce orestuj, dochuť.']);
+meal('w1d2','Tvaroh s pažitkou a chlebem',420,41,30,10,
+ [['Tvaroh',300,'g'],['Pažitka',0,''],['Okurka / rajče',1,'ks'],['Žitný chléb',1,'plátek']],
+ ['Tvaroh rozmíchej s pažitkou, solí a pepřem.','Namaž / nandej na chléb, zelenina k tomu. 3 minuty.']);
+meal('w1d3','Omeleta se šunkou a cottage',450,43,6,26,
+ [['Vejce',3,'ks'],['Šunka',50,'g'],['Cottage',100,'g'],['Salát / zelenina',0,'']],
+ ['Omeletu udělej na kapce oleje, šunku vlož do půlky.','Cottage a salát podávej vedle.']);
+meal('w1d4','Hovězí burgerové placky s bramborami',680,48,58,26,
+ [['Mleté hovězí 10 %',200,'g'],['Brambory',300,'g'],['Mražená zelenina',200,'g'],['Olej',7,'g'],['Ajvar / hořčice',0,'1–2 lžíce']],
+ ['Z masa vytvaruj 2 placky, osol, opepři, opeč 3–4 min z každé strany.','Brambory uvař, zeleninu prohřej na pánvi po mase.']);
+meal('w1d5','Tortilly s kuřecím',650,48,65,15,
+ [['Tortilla',2,'ks'],['Kuřecí prsa',150,'g'],['Bílý jogurt (dip)',100,'g'],['Zelenina',0,'dle chuti']],
+ ['Kuřecí nudličky orestuj s kořením.','Jogurt + česnek = dip. Vše zabal do tortill.']);
+meal('w1d6','Tuňák s cottage a salátem',530,74,10,18,
+ [['Tuňák ve vl. šťávě',2,'konzervy'],['Cottage',200,'g'],['Zeleninový salát',0,'velká mísa'],['Olej',7,'g']],
+ ['Vše smíchej do mísy, dochuť citronem a pepřem. 5 minut.']);
+meal('w1d7','Losos s pečenou zeleninou',530,44,15,30,
+ [['Losos',200,'g'],['Zelenina na plech',300,'g']],
+ ['Zeleninu peč 20 min na 200 °C, pak přidej lososa a peč dalších 12–15 min.']);
+
+/* --- T2 italská --- */
+meal('w2l1','Boloňské těstoviny',730,52,68,21,
+ [['Mleté hovězí 10 %',600,'g'],['Passata',400,'g'],['Cibule',1,'ks'],['Mrkev',1,'ks'],['Česnek',2,'stroužky'],['Oregano',0,''],['Olej',10,'g'],['Těstoviny (suché)',270,'g']],
+ ['Cibuli, mrkev a česnek orestuj, přidej maso a opeč.','Passata + oregano, 20 min poduste.','Těstoviny zvlášť, rozděl na 3 porce.'],3);
+meal('w2l2','Kuřecí na rozmarýnu z plechu',650,60,68,8,
+ [['Kuřecí prsa',750,'g'],['Brambory',1200,'g'],['Cuketa',400,'g'],['Rozmarýn + česnek',0,''],['Olej',15,'g']],
+ ['Vše nakrájej, promíchej s olejem a kořením na plechu.','Peč 35 min na 200 °C. Rozděl na 3 porce.'],3);
+meal('w2d1','Těstovinový salát s tuňákem',590,50,68,10,
+ [['Těstoviny (suché)',90,'g'],['Tuňák',1,'konzerva'],['Rajčata',150,'g'],['Mozzarella light',60,'g']],
+ ['Těstoviny uvař a zchlaď pod vodou.','Smíchej vše, dochuť octem, pepřem a bazalkou.']);
+meal('w2d2','Vejce natvrdo na chlebu s tvarohovou pomazánkou',505,42,28,22,
+ [['Vejce natvrdo',3,'ks'],['Tvaroh',150,'g'],['Žitný chléb',1,'plátek'],['Hořčice, pažitka',0,''],['Zelenina',0,'dle chuti']],
+ ['Tvaroh rozmíchej s hořčicí, solí a pažitkou — pomazánka.','Namaž chléb, navrch plátky vajec natvrdo, zelenina vedle.']);
+meal('w2d3','Frittata se špenátem',420,40,5,27,
+ [['Vejce',4,'ks'],['Špenát (mražený)',150,'g'],['Sýr 30 %',30,'g']],
+ ['Špenát prohřej na pánvi, zalij rozšlehanými vejci.','Posyp sýrem, pod pokličkou 5 min doztuhnout.']);
+meal('w2d4','Kuřecí s gnocchi',660,56,84,6,
+ [['Kuřecí prsa',200,'g'],['Gnocchi',250,'g'],['Passata',150,'g']],
+ ['Kuřecí opeč, přidej passatu.','Gnocchi 2 min ve vroucí vodě, vmíchej do omáčky.']);
+meal('w2d5','Bruschetta večeře',510,52,48,8,
+ [['Žitný chléb',2,'plátky'],['Cottage',200,'g'],['Rajčata',150,'g'],['Krůtí šunka',100,'g']],
+ ['Chléb opeč nasucho, namaž cottage, navrš rajčata a šunku, pepř.']);
+meal('w2d6','Pečená treska s fazolkami',420,61,15,12,
+ [['Treska / hejk',300,'g'],['Zelené fazolky',300,'g'],['Olej',10,'g'],['Citron',0,'½ ks']],
+ ['Rybu s fazolkami peč 15 min na 200 °C, zakápni citronem.']);
+meal('w2d7','Minestrone s kuřecím',700,49,70,16,
+ [['Kuřecí prsa',100,'g'],['Fazole (konzerva)',240,'g'],['Kořenová zelenina',200,'g'],['Parmazán',20,'g'],['Žitný chléb',1,'plátek'],['Olej',10,'g']],
+ ['Zeleninu orestuj, zalij vývarem, přidej kuřecí kousky a fazole.','15 min povař, posyp parmazánem.']);
+
+/* --- T3 mexická --- */
+meal('w3l1','Chilli con carne',800,56,88,21,
+ [['Mleté hovězí 10 %',600,'g'],['Černé fazole (konzerva)',240,'g'],['Kukuřice',140,'g'],['Krájená rajčata',400,'g'],['Chilli + kmín',0,''],['Rýže (suchá)',270,'g']],
+ ['Maso orestuj, přidej fazole, kukuřici, rajčata a koření.','20 min poduste. Rýži zvlášť, 3 porce.'],3);
+meal('w3l2','Fajitas',720,62,68,15,
+ [['Kuřecí prsa',750,'g'],['Papriky',3,'ks'],['Cibule',2,'ks'],['Fajita koření',0,''],['Olej',15,'g'],['Tortilly',6,'ks']],
+ ['Nudličky masa a zeleniny prudce orestuj — 10 min.','Servíruj s tortillami, 2 ks na porci.'],3);
+meal('w3d1','Burrito bowl',680,52,88,8,
+ [['Rýže (suchá)',90,'g'],['Kuřecí prsa',150,'g'],['Černé fazole',120,'g'],['Salsa',0,''],['Bílý jogurt',100,'g']],
+ ['Vše navrstvi do misky, jogurt místo zakysané smetany.']);
+meal('w3d2','Salát s kuřecím a avokádem',470,48,22,17,
+ [['Kuřecí prsa',200,'g'],['Ledový salát',0,'mísa'],['Avokádo',0.5,'ks'],['Kukuřice',70,'g'],['Salsa',0,'']],
+ ['Kuřecí gril / pánev, nakrájej na salát s avokádem a kukuřicí.']);
+meal('w3d3','Quesadilla-omeleta',565,43,34,28,
+ [['Vejce',3,'ks'],['Tortilla',1,'ks'],['Sýr 30 %',30,'g'],['Šunka',50,'g'],['Paprika',1,'ks']],
+ ['Vejce vylij na pánev, přiklop tortillou.','Otoč, posyp sýrem a šunkou, přelož napůl.']);
+meal('w3d4','Tacos',665,47,42,30,
+ [['Mleté hovězí 10 %',150,'g'],['Malé tortilly',3,'ks'],['Zelenina',0,''],['Bílý jogurt (dip)',100,'g'],['Sýr 30 %',20,'g']],
+ ['Maso orestuj s kořením, plň do tortill se zeleninou, dipem a sýrem.']);
+meal('w3d5','Burrito',675,51,78,12,
+ [['Velká tortilla',1,'ks'],['Kuřecí prsa',150,'g'],['Rýže (suchá)',60,'g'],['Černé fazole',120,'g'],['Salsa',0,'']],
+ ['Vše zabal do tortilly, na pánvi zapeč šev dolů.']);
+meal('w3d6','Tuňákový mex salát',500,61,42,9,
+ [['Tuňák',2,'konzervy'],['Černé fazole',120,'g'],['Kukuřice',70,'g'],['Zelenina',0,'mísa'],['Olej',7,'g']],
+ ['Smíchej, dochuť limetkou a chilli. 5 minut.']);
+meal('w3d7','Mleté hovězí se zeleninou z pánve',430,46,12,20,
+ [['Mleté hovězí 10 %',200,'g'],['Mražená zelenina (mex mix)',300,'g'],['Mexické koření',0,''],['Bílý jogurt',50,'g']],
+ ['Maso orestuj dosucha s kořením, přisyp zeleninu a prohřej.','Lžíce jogurtu navrch.']);
+
+/* --- T4 asijská --- */
+meal('w4l1','Kuřecí curry',710,68,72,14,
+ [['Kuřecí prsa',750,'g'],['Bílý jogurt',300,'g'],['Kari koření',1.5,'lžíce'],['Cibule',1,'ks'],['Krájená rajčata',400,'g'],['Zázvor',0,'kousek'],['Olej',10,'g'],['Rýže (suchá)',270,'g']],
+ ['Cibuli s kari a zázvorem orestuj, přidej maso.','Rajčata, 20 min poduste. Jogurt vmíchej mimo plotnu.','Rýže zvlášť, 3 porce.'],3);
+meal('w4l2','Teriyaki hovězí nudličky',670,52,80,12,
+ [['Hovězí zadní',600,'g'],['Sójová omáčka',45,'ml'],['Med',15,'g'],['Wok zelenina (mražená)',600,'g'],['Rýžové nudle',270,'g'],['Sezamový olej',10,'g']],
+ ['Nudličky masa prudce orestuj, odlož.','Zelenina do woku, zpět maso, sójovka + med.','Nudle jen spař horkou vodou a vmíchej. 3 porce.'],3);
+meal('w4d1','Smažená rýže light',765,59,82,18,
+ [['Rýže (suchá)',90,'g'],['Vejce',2,'ks'],['Kuřecí prsa',150,'g'],['Hrášek',80,'g'],['Sójová omáčka',0,''],['Olej',7,'g']],
+ ['Rýži uvař (ideálně den předem).','Kuřecí orestuj, přisyp rýži a hrášek, na kraji usmaž vejce, vše promíchej se sójovkou.']);
+meal('w4d2','Asijská polévka s krevetami',380,41,8,15,
+ [['Krevety',150,'g'],['Vejce',2,'ks'],['Vývar / miso',600,'ml'],['Mražená zelenina',200,'g'],['Zázvor',0,'kousek']],
+ ['Vývar se zázvorem přiveď k varu, přidej zeleninu a krevety — 3 minuty.','Vejce vmíchej vidličkou do vroucí polévky.']);
+meal('w4d3','Omeleta se sójovkou + cottage',510,47,10,30,
+ [['Vejce',4,'ks'],['Jarní cibulka',0,''],['Cottage',150,'g'],['Okurka + sezam',0,'salát']],
+ ['Omeleta s pár kapkami sójovky a cibulkou.','Okurkový salát se sezamem a cottage vedle.']);
+meal('w4d4','Losos teriyaki',790,53,80,28,
+ [['Losos',200,'g'],['Rýže (suchá)',90,'g'],['Brokolice / pak choi',200,'g'],['Sójová omáčka + med',0,'']],
+ ['Lososa peč 12 min na 200 °C, potři sójovkou s medem.','Rýže + zelenina v páře nebo v hrnci.']);
+meal('w4d5','Kuřecí wok s nudlemi',680,55,78,14,
+ [['Kuřecí prsa',200,'g'],['Rýžové nudle',90,'g'],['Wok zelenina',200,'g'],['Olej',10,'g'],['Sójová omáčka',0,'']],
+ ['Klasický wok: maso, zelenina, spařené nudle, sójovka. 12 minut.']);
+meal('w4d6','Krevetový salát',400,47,15,13,
+ [['Krevety (nebo tuňák 2 konz.)',200,'g'],['Okurka',1,'ks'],['Edamame',100,'g'],['Sezam',10,'g']],
+ ['Krevety 3 min na pánvi, smíchej se salátem, sezam, sójovka + limetka.']);
+meal('w4d7','Kuře na zázvoru',455,55,14,20,
+ [['Kuřecí stehenní řízky',250,'g'],['Dušená zelenina',300,'g'],['Zázvor + česnek',0,''],['Sezamový olej',7,'g']],
+ ['Maso orestuj se zázvorem a česnekem, přidej zeleninu a poduste.']);
+
+/* ---- struktura týdnů ---- */
+const DAYS=['Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota','Neděle'];
+const TRAIN=[0,3,4]; // Po, Čt, Pá (index v týdnu)
+const BF=['snA','snB','snA','snB','snA','snB','snA'];
+function week(l1,l2,d){return DAYS.map((_,i)=>({
+  bf:BF[i], snack:TRAIN.includes(i)?'svT':'svN',
+  lunch:i<3?l1:(i===6?'volny':l2), dinner:d[i], night:'noc',
+  note:i===2?('Večer uvař batch: '+M[l2].name+' (3 porce na Čt–So)'):
+       i===6?'Večer uvař batch oběd na Po–St (další týden)':null
+}));}
+const WEEKS=[
+ {name:'Týden 1 · Česká', days:week('w1l1','w1l2',['w1d1','w1d2','w1d3','w1d4','w1d5','w1d6','w1d7']),
+  shop:{
+   veg:['Banány 5, jablka 4, kiwi 4, švestky','Brambory 2 kg','Cibule + česnek','Okurky, rajčata, paprika (salátové)','Mrkev'],
+   bread:['Žitný chléb','Tortilly 1 balení'],
+   meat:['Kuřecí stehenní řízky 1 kg','Kuřecí prsa 0,5 kg','Mleté hovězí 10 % 0,8 kg','Losos 0,2 kg'],
+   dairy:['Vejce 15 ks','Tvaroh 6×250 g','Řecký jogurt light / skyr 3×','Cottage 2×','Bílý jogurt 2×'],
+   frozen:['Brokolice + zeleninový mix 3 kg'],
+   dry:['Ovesné vločky 1 kg','Rýže 1 kg','Tuňák 2 konzervy','Fazole červené 1 konz.','Krájená rajčata 1 konz.','Ořechy 150 g','Dýňová semínka']
+  }},
+ {name:'Týden 2 · Italská', days:week('w2l1','w2l2',['w2d1','w2d2','w2d3','w2d4','w2d5','w2d6','w2d7']),
+  shop:{
+   veg:['Banány, jablka, kiwi, švestky','Brambory 1,5 kg','Cuketa 2, rajčata 1 kg, mrkev','Cibule + česnek'],
+   bread:['Žitný chléb'],
+   meat:['Mleté hovězí 10 % 0,6 kg','Kuřecí prsa 1,2 kg','Treska 0,3 kg','Krůtí šunka 200 g'],
+   dairy:['Vejce 15 ks','Tvaroh 6×','Řecký jogurt light / skyr 3×','Cottage 2×','Mozzarella light 1×','Sýr 30 % + parmazán','Gnocchi 250 g (chlazené)'],
+   frozen:['Fazolky','Špenát'],
+   dry:['Těstoviny 0,5 kg','Passata 2×','Fazole 1 konz.','Tuňák 2 konzervy','Ovesné vločky','Ořechy 150 g']
+  }},
+ {name:'Týden 3 · Mexická', days:week('w3l1','w3l2',['w3d1','w3d2','w3d3','w3d4','w3d5','w3d6','w3d7']),
+  shop:{
+   veg:['Banány, jablka, kiwi, švestky','Papriky 5, cibule, ledový salát','Avokádo 1','Okurka, rajčata'],
+   bread:['Žitný chléb','Tortilly 2 balení + malé tortilly'],
+   meat:['Mleté hovězí 10 % 1,0 kg','Kuřecí prsa 1,3 kg'],
+   dairy:['Vejce 12 ks','Tvaroh 6×','Řecký jogurt light / skyr 3×','Bílý jogurt 3×','Sýr 30 %'],
+   frozen:['Zelenina mex mix 1 kg'],
+   dry:['Rýže 1 kg','Tuňák 2 konzervy','Černé fazole 3 konz.','Kukuřice 2 konz.','Salsa / passata','Krájená rajčata 1 konz.','Ovesné vločky','Ořechy 150 g']
+  }},
+ {name:'Týden 4 · Asijská', days:week('w4l1','w4l2',['w4d1','w4d2','w4d3','w4d4','w4d5','w4d6','w4d7']),
+  shop:{
+   veg:['Banány, jablka, kiwi, švestky','Okurky 2','Zázvor + česnek','Jarní cibulka'],
+   bread:['Žitný chléb'],
+   meat:['Kuřecí prsa 1,3 kg + stehenní 0,25 kg','Hovězí zadní 0,6 kg','Losos 0,2 kg'],
+   dairy:['Vejce 12 ks','Tvaroh 6×','Řecký jogurt light / skyr 3×','Cottage 1×','Bílý jogurt 2× (na curry)'],
+   frozen:['Krevety 0,4 kg','Wok zelenina 2,5 kg','Hrášek + edamame'],
+   dry:['Rýže + rýžové nudle','Sójová omáčka, sezamový olej, sezam','Med','Ovesné vločky','Ořechy 150 g']
+  }}
+];
+/* týdny 5–8 = druhé kolo rotace kuchyní */
+['Česká','Italská','Mexická','Asijská'].forEach((n,i)=>WEEKS.push({name:'Týden '+(i+5)+' · '+n+' — 2. kolo',days:WEEKS[i].days,shop:WEEKS[i].shop}));
+const TARGET={train:{k:2450,b:195},rest:{k:2150,b:185}};
+
+/* ================= STATE ================= */
+let curWeek=(()=>{const d=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,1))/864e5);return Math.floor(d/7)%8;})();
+const eaten={}; // key: `${week}-${day}-${slot}` -> bool
+const shopGot={};
+const light={}; // key: `${week}-${day}` -> bool (lehčí večeře)
+let water=0;   // sklenice po 250 ml, cíl 12 = 3 l
+
+/* ================= RENDER ================= */
+const $=s=>document.querySelector(s);
+const todayIdx=(new Date().getDay()+6)%7; // Po=0
+
+function slotLabel(s){return {bf:'Snídaně',snack:'Svačina',lunch:'Oběd',dinner:'Večeře',night:'Před spaním'}[s];}
+
+function mealRow(w,d,slot,id){
+  const m=M[id],key=w+'-'+d+'-'+slot,done=eaten[key];
+  return `<li class="meal ${done?'done':''}">
+    <input type="checkbox" ${done?'checked':''} aria-label="Snědeno: ${m.name}" onchange="toggleEat('${key}')">
+    <button class="meal-btn" onclick="openMeal('${id}')">
+      <span class="slot">${slotLabel(slot)}</span>
+      <span class="nm">${m.name} <span class="arrow">›</span></span>
+    </button>
+    <span class="macro"><b>${m.k}</b> kcal<br>${m.b} g B</span>
+  </li>`;
+}
+
+function slotsOf(w,i){const d=WEEKS[w].days[i];return [['bf',d.bf],['snack',d.snack],['lunch',d.lunch],['dinner',light[w+'-'+i]?'lgt':d.dinner],['night',d.night]];}
+function dayKeys(w,i){return ['bf','snack','lunch','dinner','night'].map(s=>w+'-'+i+'-'+s);}
+function dayDone(w,i){return dayKeys(w,i).every(k=>eaten[k]);}
+function weekDone(w){return WEEKS[w].days.every((_,i)=>dayDone(w,i));}
+
+function dayMeals(w,dIdx){
+  return slotsOf(w,dIdx).map(([s,id])=>mealRow(w,dIdx,s,id)).join('');
+}
+
+function renderTicket(){
+  const w=curWeek,d=WEEKS[w].days[todayIdx],isT=TRAIN.includes(todayIdx);
+  const tgt=isT?TARGET.train:TARGET.rest,isL=light[w+'-'+todayIdx];
+  let k=0,b=0;
+  slotsOf(w,todayIdx).forEach(([s,id])=>{if(eaten[w+'-'+todayIdx+'-'+s]){k+=M[id].k;b+=M[id].b;}});
+  const kp=Math.min(100,k/tgt.k*100),bp=Math.min(100,b/tgt.b*100),wp=Math.min(100,water/12*100);
+  $('#ticket').innerHTML=`
+   <div class="ticket-head">
+     <span class="day">Dnes · ${DAYS[todayIdx]}</span>
+     <label class="wk-check"><input type="checkbox" ${dayDone(w,todayIdx)?'checked':''} onchange="toggleDay(${todayIdx})"> Den hotový</label>
+     <span class="badge ${isT?'train':'rest'}">${isT?'💪 Tréninkový den':'🌿 Klidový den'}</span>
+   </div>
+   ${isT?`<div class="timing">🕑 Oběd sněz do ~12:30 (předtréninkové jídlo) · trénink 14:00+ · svačinu (protein + banán) hned po tréninku · večeře s přílohou doplní glykogen</div>`:''}
+   <div class="gauges">
+     <div class="gauge"><label><span>Kalorie</span><b>${k} / ${isL?tgt.k-300:tgt.k} kcal</b></label>
+       <div class="bar kcal"><i class="${k>tgt.k?'over':''}" style="width:${kp}%"></i></div></div>
+     <div class="gauge"><label><span>Bílkoviny</span><b>${b} / ${tgt.b} g</b></label>
+       <div class="bar"><i style="width:${bp}%"></i></div></div>
+     <div class="gauge"><label><span>Voda</span><b>${(water*0.25).toLocaleString('cs-CZ')} / 3 l</b></label>
+       <div class="water-row"><div class="bar" style="flex:1"><i style="width:${wp}%;background:#3E86B5"></i></div>
+       <button class="wbtn" onclick="addWater(-1)" aria-label="Ubrat sklenici">−</button>
+       <button class="wbtn" onclick="addWater(1)">+ sklenice</button></div></div>
+   </div>
+   <label class="lsw"><input type="checkbox" ${isL?'checked':''} onchange="toggleLight(${todayIdx})"> Lehčí večeře dnes — tvarohová mísa (−~300 kcal)</label>
+   <ul class="meals">${dayMeals(w,todayIdx)}</ul>
+   ${d.note?`<div class="note-row">🍳 ${d.note}</div>`:''}
+   <div class="hint">Odškrtávej snědená jídla — ukazatele se plní. Klepnutím na jídlo otevřeš recept. ${isT?'Sacharidy dnes patří k obědu a k večeři po tréninku.':'Dnes večeře bez přílohy — jen bílkovina a zelenina.'}</div>`;
+}
+
+function daySum(w,i){let k=0,b=0;slotsOf(w,i).forEach(([s,id])=>{k+=M[id].k;b+=M[id].b;});return{k,b};}
+
+function renderDays(){
+  $('#weekTitle').textContent=WEEKS[curWeek].name;
+  $('#weekTitle').classList.toggle('done',weekDone(curWeek));
+  $('#wkAll').checked=weekDone(curWeek);
+  $('#days').innerHTML=WEEKS[curWeek].days.map((d,i)=>{const t=daySum(curWeek,i),dd=dayDone(curWeek,i);return `
+   <details class="daycard ${i===todayIdx?'today':''} ${dd?'done':''}" ${i===todayIdx?'open':''}>
+     <summary>
+       <span class="dleft"><input type="checkbox" class="daychk" ${dd?'checked':''} onclick="event.stopPropagation()" onchange="toggleDay(${i})" aria-label="Celý den hotový"><span class="dname">${DAYS[i]} ${TRAIN.includes(i)?'💪':''}</span></span>
+       <span class="sumr"><span class="dk">${t.k} kcal · ${t.b} g B</span><span class="chev">›</span></span>
+     </summary>
+     <label class="lsw"><input type="checkbox" ${light[curWeek+'-'+i]?'checked':''} onchange="toggleLight(${i})"> Lehčí večeře (−~300 kcal)</label>
+     <ul class="meals">${dayMeals(curWeek,i)}</ul>
+     ${d.note?`<div class="note-row">🍳 ${d.note}</div>`:''}
+   </details>`;}).join('');
+}
+
+const SHOP_CATS=[['veg','🥦 Ovoce a zelenina'],['bread','🍞 Pečivo'],['meat','🥩 Maso a ryby'],['dairy','🧀 Chlaďák — mléčné a vejce'],['frozen','🧊 Mrazák'],['dry','🥫 Trvanlivé a konzervy']];
+
+function renderShop(){
+  const shop=WEEKS[curWeek].shop;
+  $('#shop').innerHTML=`
+   <div class="shop-head">
+     <strong>${WEEKS[curWeek].name.split('·')[1].trim()} kuchyně · ~800–1000 Kč</strong>
+     <button class="copy-btn" onclick="copyShop()">📋 Zkopírovat seznam</button>
+   </div>`+
+   SHOP_CATS.map(([cat,label])=>!shop[cat]||!shop[cat].length?'':`
+   <h5 class="shop-cat">${label}</h5>
+   <ul>${shop[cat].map((it,i)=>{const key=curWeek+'-'+cat+'-'+i,got=shopGot[key];
+     return `<li class="${got?'got':''}"><input type="checkbox" ${got?'checked':''} onchange="toggleShop('${key}')" aria-label="${it}"><span>${it}</span></li>`;}).join('')}</ul>`).join('');
+}
+
+function renderTabs(){
+  $('#tabs').innerHTML=WEEKS.map((w,i)=>{const d=weekDone(i);return `<button class="tab ${d?'done':''}" role="tab" aria-selected="${i===curWeek}" aria-label="${w.name}${d?' — hotový':''}" onclick="setWeek(${i})">T${i+1}${d?' ✓':''}</button>`;}).join('');
+}
+
+function renderAll(){renderTabs();renderTicket();renderDays();renderShop();}
+
+/* ================= AKCE ================= */
+function setWeek(i){curWeek=i;renderAll();window.scrollTo({top:0});}
+function toggleEat(key){eaten[key]=!eaten[key];renderTicket();renderDays();renderTabs();}
+function toggleShop(key){shopGot[key]=!shopGot[key];renderShop();}
+function toggleLight(i){const key=curWeek+'-'+i;light[key]=!light[key];renderTicket();renderDays();}
+function addWater(d){water=Math.max(0,Math.min(16,water+d));renderTicket();}
+function toggleDay(i){const v=!dayDone(curWeek,i);dayKeys(curWeek,i).forEach(k=>eaten[k]=v);renderTicket();renderDays();renderTabs();}
+function toggleWeek(){const v=!weekDone(curWeek);WEEKS[curWeek].days.forEach((_,i)=>dayKeys(curWeek,i).forEach(k=>eaten[k]=v));renderTicket();renderDays();renderTabs();}
+
+/* ---- export do PDF (tisková verze) ---- */
+function recipeCard(id){
+  const m=M[id];
+  const ing=m.ing.map(([n,q,u])=>q?`${n} ${q} ${u}`:(u?`${n} (${u})`:n)).join(' · ');
+  return `<div class="pr"><h4>${m.name} <span>· ${m.k} kcal · ${m.b} B / ${m.s} S / ${m.t} T${m.batch?' · batch '+m.batch+' porce':''}</span></h4>
+   <p class="pi">${ing}</p><p class="ps">${m.steps.map((s,i)=>(i+1)+') '+s).join(' ')}</p></div>`;
+}
+function buildPrint(){
+  const wk=w=>{
+    const W=WEEKS[w];
+    const ids=[...new Set([...W.days.map(d=>d.lunch),...W.days.map(d=>d.dinner)])].filter(id=>id!=='volny');
+    const rows=W.days.map((d,i)=>{const t=daySum(w,i);return `<tr><td>${DAYS[i]}${TRAIN.includes(i)?' 💪':''}</td><td>${M[d.lunch].name}</td><td>${M[d.dinner].name}</td><td>${t.k} / ${t.b} g B</td></tr>`;}).join('');
+    const shop=SHOP_CATS.filter(([c])=>W.shop[c]&&W.shop[c].length).map(([c,l])=>`<b>${l.replace(/^\S+\s/,'')}:</b> ${W.shop[c].join(', ')}`).join(' · ');
+    return `<h3>${W.name}</h3>
+     <table class="pt"><tr><th>Den</th><th>Oběd</th><th>Večeře</th><th>kcal / bílkoviny</th></tr>${rows}</table>
+     <div class="pcols">${ids.map(recipeCard).join('')}</div>
+     <p class="pshop">🛒 ${shop}</p>`;
+  };
+  $('#printView').innerHTML=`
+   <h1>Jídelníček — 8 týdnů · cíl ~93 kg</h1>
+   <p class="pmeta">Trénink Po / Čt / Pá od 14:00 (oběd do 12:30, svačina po tréninku) · tréninkový den ~2 450 kcal / 195 g B · klidový den ~2 150 kcal / 185 g B · maso syrová váha, přílohy suchá váha (rýže ×2,8 / těstoviny ×2,4 po uvaření, maso −25–30 %) · snídaně se střídají A/B, lehčí večeře = tvarohová mísa · týdny 5–8 opakují týdny 1–4</p>
+   <h3>Základ každý den</h3>
+   <div class="pcols">${['snA','snB','svT','svN','noc','lgt'].map(recipeCard).join('')}</div>
+   ${[0,1,2,3].map(wk).join('')}`;
+}
+function exportPDF(){buildPrint();window.print();}
+window.addEventListener('beforeprint',()=>{if(!$('#printView').innerHTML)buildPrint();});
+
+/* ---- uložení / načtení / reset ---- */
+/* Mimo Claude Artifacts (GitHub Pages) window.storage neexistuje — náhrada přes localStorage. */
+window.storage=window.storage||{
+  set:async(k,v)=>{localStorage.setItem('jidelnicek.v1.'+k,v);return true;},
+  get:async(k)=>{const v=localStorage.getItem('jidelnicek.v1.'+k);return v===null?null:{value:v};},
+  delete:async(k)=>{localStorage.removeItem('jidelnicek.v1.'+k);return true;}
+};
+async function saveState(){
+  try{
+    const res=await window.storage.set('plan-state',JSON.stringify({eaten,shopGot,light,curWeek,water}));
+    toast(res?'Uloženo ✓ — příště pokračuješ, kde jsi skončil':'Uložení se nepovedlo, zkus to znovu');
+  }catch(e){toast('Uložení se nepovedlo, zkus to znovu');}
+}
+async function loadState(){
+  try{
+    const r=await window.storage.get('plan-state');
+    if(r&&r.value){
+      const s=JSON.parse(r.value);
+      Object.assign(eaten,s.eaten||{});Object.assign(shopGot,s.shopGot||{});Object.assign(light,s.light||{});
+      if(typeof s.curWeek==='number'&&s.curWeek>=0&&s.curWeek<WEEKS.length)curWeek=s.curWeek;
+      if(typeof s.water==='number')water=s.water;
+      renderAll();
+    }
+  }catch(e){/* zatím nic uloženo — v pořádku */}
+}
+async function resetAll(){
+  if(!confirm('Opravdu vynulovat všechna zaškrtnutí a začít plán znovu?'))return;
+  [eaten,shopGot,light].forEach(o=>Object.keys(o).forEach(k=>delete o[k]));
+  water=0;
+  try{await window.storage.delete('plan-state');}catch(e){}
+  renderAll();
+  toast('Plán vynulován — jede se od začátku 💪');
+}
+function copyShop(){
+  const shop=WEEKS[curWeek].shop;
+  const txt='Nákup — '+WEEKS[curWeek].name+'\n\n'+
+    SHOP_CATS.filter(([c])=>shop[c]&&shop[c].length)
+      .map(([c,label])=>label+'\n'+shop[c].map(i=>'• '+i).join('\n')).join('\n\n');
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Seznam zkopírován — vlož si ho do poznámek'),()=>toast('Kopírování se nepovedlo — označ text ručně'));
+}
+let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* ---- převod syrová → uvařená váha ---- */
+const COOK=[
+ [/rýže \(such/i,2.8,'uvařené'],
+ [/rýžové nudle/i,2.5,'uvařené'],
+ [/těstoviny/i,2.4,'uvařené'],
+ [/brambory/i,1,'uvařené ≈ stejná váha, pečené ~−15 %'],
+ [/kuřecí prsa/i,.75,'hotové'],
+ [/kuřecí steh/i,.7,'hotové'],
+ [/mleté hovězí/i,.7,'hotové'],
+ [/panenka/i,.75,'hotové'],
+ [/hovězí zadní/i,.7,'hotové'],
+ [/losos/i,.8,'hotové'],
+ [/treska|hejk/i,.8,'hotové'],
+ [/krůtí prsa/i,.75,'hotové'],
+ [/krevety/i,.85,'hotové']
+];
+function cooked(name,g){
+  for(const [re,f,lab] of COOK){
+    if(re.test(name)){
+      if(f===1)return lab;
+      return '→ ~'+(Math.round(g*f/5)*5)+' g '+lab;
+    }
+  }
+  return '';
+}
+
+/* ---- modal + škálování porcí ---- */
+let curMeal=null,curPortions=3;
+function openMeal(id){
+  curMeal=M[id];curPortions=curMeal.batch||1;
+  renderModal();$('#modal').showModal();
+}
+function renderModal(){
+  const m=curMeal,f=m.batch?curPortions/m.batch:1;
+  $('#mName').textContent=m.name;
+  $('#mChips').innerHTML=`<span class="chip k">${m.k} kcal</span><span class="chip">${m.b} g bílkovin</span><span class="chip">${m.s} g sacharidů</span><span class="chip">${m.t} g tuků</span><span class="chip k">na porci</span>`;
+  const ing=m.ing.map(([n,q,u])=>{
+    const qty=q?Math.round(q*f*10)/10:0;
+    const val=q?qty+' '+u:(u||'');
+    const c=(q&&u==='g')?cooked(n,qty):'';
+    return `<li><span>${n}${c?`<small class="cook">${c}</small>`:''}</span><b>${val}</b></li>`;}).join('');
+  $('#mBody').innerHTML=`
+    ${m.batch?`<div class="scaler"><span>Vařím porcí:</span>
+      <button onclick="scale(-1)" aria-label="Méně porcí">−</button><b>${curPortions}</b><button onclick="scale(1)" aria-label="Více porcí">+</button></div>`:''}
+    <h4>Suroviny${m.batch?' (na '+curPortions+' porce)':''}</h4>
+    <p class="cook-note">Gramy = syrová / suchá váha · šedě orientační váha po uvaření</p>
+    <ul class="ing">${ing}</ul>
+    <h4>Postup</h4><ol class="steps">${m.steps.map(s=>'<li>'+s+'</li>').join('')}</ol>`;
+}
+function scale(d){curPortions=Math.min(6,Math.max(2,curPortions+d));renderModal();}
+$('#mClose').onclick=()=>$('#modal').close();
+$('#modal').addEventListener('click',e=>{if(e.target.tagName==='DIALOG')e.target.close();});
+
+renderAll();
+loadState();
+</script>
+</body>
+</html>
