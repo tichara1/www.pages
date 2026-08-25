@@ -25,12 +25,12 @@
     "slug": "fitspot",
     "title": "FitSpot",
     "path": "fitspot/",
-    "tagline": "Objevování lekcí a HYROX tréninků",
-    "description": "Mobilní aplikace na hledání lekcí v okolí — HYROX, kruhové tréninky, TRX, pilates i fyzio. Detail lekce s fotkou a lektorem, rezervační flow. Jeden bundlovaný soubor bez závislostí.",
-    "tags": ["react", "ios", "fitness", "hyrox", "discovery"],
-    "stack": "Bundlovaný single-file (bez CDN)",
+    "tagline": "Najdi trenéra podle lokality a cvičení",
+    "description": "Dvě verze vedle sebe, přepínají se nahoře. v2 hledá trenéra ve třech krocích — městská část, typ cvičení a nepovinně typ prostoru (tělocvična, ovál, venku) — a výsledek ukáže na živé mapě Prahy i v seznamu. Požadavek na trénink nese zprávu a přeskočitelný zdravotní dotazník, který trenér vidí u sebe v přehledu. Super admin sleduje provize vlastníka appky ve třech řezech. v1 zůstává jako původní koncept pronájmu prostorů.",
+    "tags": ["react", "ios", "fitness", "hyrox", "mapa", "leaflet"],
+    "stack": "React 18 + Babel standalone + Leaflet (v1 bundlovaný single-file)",
     "status": "active",
-    "updated": "2026-06-15"
+    "updated": "2026-08-25"
   },
   {
     "slug": "concept",

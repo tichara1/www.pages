@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FitSpot v2 — najdi trenéra</title>
+<meta name="description" content="Hledání trenéra podle lokality, cvičení a typu prostoru, požadavek na trénink se zdravotním dotazníkem."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<style>
+  :root {
+    --ac: #C6FF3A;
+    --bg: #0B0C08;
+    --surface: #14160E;
+    --surface-2: #191C11;
+    --line: #22261A;
+    --line-2: #2A2E1E;
+    --text: #F1F4E8;
+    --muted: #9AA18A;
+    --dim: #6B7259;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+  }
+  h1, h2, h3 { margin: 0; }
+  button, input, textarea, select { font-family: inherit; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+    outline: 2px solid var(--ac); outline-offset: 2px;
+  }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  .noscroll::-webkit-scrollbar { display: none; }
+  .noscroll { scrollbar-width: none; }
+
+  @keyframes fsFadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes fsToastIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  /* Leaflet naladěný do tmavého schématu prototypu. */
+  .leaflet-container { background: #0B0C08; font-family: 'Archivo', sans-serif; }
+  .leaflet-control-zoom a {
+    background: #191C11; color: #F1F4E8; border-color: #2A2E1E;
+  }
+  .leaflet-control-zoom a:hover { background: #22261A; color: var(--ac); }
+  .leaflet-control-attribution {
+    background: rgba(11, 12, 8, 0.72) !important; color: #6B7259 !important; font-size: 10px !important;
+  }
+  .leaflet-control-attribution a { color: #9AA18A !important; }
+  .fs-pin {
+    display: grid; place-items: center; border-radius: 999px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--line-2); color: var(--text);
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55); white-space: nowrap; padding: 0 9px; height: 26px;
+    transition: transform 0.12s ease;
+  }
+  .fs-pin:hover { transform: scale(1.08); }
+  .fs-pin[data-active="true"] { background: var(--ac); border-color: var(--ac); color: #0B0C08; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script src="data.js"></script>
+<script src="logic.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="store.jsx"></script>
+<script type="text/babel" src="ui.jsx"></script>
+<script type="text/babel" src="map.jsx"></script>
+<script type="text/babel" src="search.jsx"></script>
+<script type="text/babel" src="lessons.jsx"></script>
+<script type="text/babel" src="trainer.jsx"></script>
+<script type="text/babel" src="admin.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

@@ -8,3 +8,5 @@ exclude:
   - weather/README.md
   - weather/tests
   - weather/package.json
+  - fitspot/README.md
+  - fitspot/v2/tests
