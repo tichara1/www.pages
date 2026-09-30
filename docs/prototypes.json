@@ -4,7 +4,7 @@
     "title": "repX",
     "path": "app/",
     "tagline": "Prototyp aplikace pro trenéry a klienty",
-    "description": "Klikací prototyp s mock daty (164 scénářů, 4 role: Host, Klientka, Trenér, Admin) včetně podrobného konceptu aplikace na /app/concept.",
+    "description": "Klikací prototyp s mock daty (164 scénářů, 4 role: Host, Klientka, Trenér, Admin) včetně podrobného konceptu aplikace na /app/concept a roadmapy MVP na /app/roadmap.",
     "tags": [
       "fitness",
       "prototyp",
