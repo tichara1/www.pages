@@ -5,7 +5,13 @@
     "path": "app/",
     "tagline": "Prototyp aplikace pro trenéry a klienty",
     "description": "Klikací prototyp s mock daty (164 scénářů, 4 role: Host, Klientka, Trenér, Admin) včetně podrobného konceptu aplikace na /app/concept.",
-    "tags": ["fitness", "prototyp", "ios", "vanilla-js", "leaflet"],
+    "tags": [
+      "fitness",
+      "prototyp",
+      "ios",
+      "vanilla-js",
+      "leaflet"
+    ],
     "stack": "Statické HTML + vanilla JS + Leaflet (bez buildu)",
     "status": "active",
     "updated": "2026-09-30"
@@ -16,7 +22,13 @@
     "path": "reserve/",
     "tagline": "Rezervace fitness lekcí ve třech rolích",
     "description": "Klient, trenér a admin v jedné iOS aplikaci. Mapa lokalit s piny, kalendář lekcí, rezervace a odhlášení, docházka účastníků a heatmapa vytížení. Role se přepínají nahoře, stav drží localStorage.",
-    "tags": ["react", "ios", "booking", "fitness", "mapa"],
+    "tags": [
+      "react",
+      "ios",
+      "booking",
+      "fitness",
+      "mapa"
+    ],
     "stack": "React 18 + Babel standalone",
     "status": "active",
     "updated": "2026-04-01"
@@ -27,7 +39,14 @@
     "path": "date/src/",
     "tagline": "Naplánuj večer ve dvou, bez dohadování",
     "description": "Plánovač rande. Průvodce od nálady přes výběr podniku po hotový program, knihovna míst s oblíbenými, export do kalendáře (.ics) a pozvánka jako PNG s QR kódem na sdílený náhled. Dvojjazyčně CZ/EN.",
-    "tags": ["react", "ios", "date", "i18n", "qr", "ics"],
+    "tags": [
+      "react",
+      "ios",
+      "date",
+      "i18n",
+      "qr",
+      "ics"
+    ],
     "stack": "React 18 + Babel standalone",
     "status": "active",
     "updated": "2026-04-29"
@@ -38,7 +57,14 @@
     "path": "fitspot/",
     "tagline": "Najdi trenéra podle lokality a cvičení",
     "description": "Dvě verze vedle sebe, přepínají se nahoře. v2 hledá trenéra ve třech krocích — městská část, typ cvičení a nepovinně typ prostoru (tělocvična, ovál, venku) — a výsledek ukáže na živé mapě Prahy i v seznamu. Požadavek na trénink nese zprávu a přeskočitelný zdravotní dotazník, který trenér vidí u sebe v přehledu. Super admin sleduje provize vlastníka appky ve třech řezech. v1 zůstává jako původní koncept pronájmu prostorů.",
-    "tags": ["react", "ios", "fitness", "hyrox", "mapa", "leaflet"],
+    "tags": [
+      "react",
+      "ios",
+      "fitness",
+      "hyrox",
+      "mapa",
+      "leaflet"
+    ],
     "stack": "React 18 + Babel standalone + Leaflet (v1 bundlovaný single-file)",
     "status": "active",
     "updated": "2026-08-25"
@@ -49,7 +75,14 @@
     "path": "concept/",
     "tagline": "Produktový koncept: naskenuj a hned víš",
     "description": "Nálepka s QR a NFC nalepená na fyzickou věc otevře v telefonu web s instruktážním videem — bez instalace. Analýza trhu, segmentů a příležitostí, se scoringem a diagramy. Pracovní názvy Qido, Tapio, Knack.",
-    "tags": ["koncept", "pwa", "qr", "nfc", "mermaid", "analýza"],
+    "tags": [
+      "koncept",
+      "pwa",
+      "qr",
+      "nfc",
+      "mermaid",
+      "analýza"
+    ],
     "stack": "Statické HTML + Mermaid",
     "status": "active",
     "updated": "2026-06-03"
@@ -60,7 +93,13 @@
     "path": "weather/",
     "tagline": "Mapa počasí s hodinovým režimem",
     "description": "Denní přehled pro 74 lokalit — ikona ukazuje nejzávažnější jev mezi 8:00 a 20:00, takže odpolední bouřka nezmizí pod celodenním sluncem. Kliknutím se přepne na hodinový režim s posuvníkem 0–23 a je vidět, jak srážkové pásmo putuje republikou. Data z modelu ICON-D2 přes Open-Meteo.",
-    "tags": ["leaflet", "mapa", "počasí", "open-meteo", "es-modules"],
+    "tags": [
+      "leaflet",
+      "mapa",
+      "počasí",
+      "open-meteo",
+      "es-modules"
+    ],
     "stack": "ES moduly + Leaflet (bez buildu)",
     "status": "active",
     "updated": "2026-08-02"
@@ -71,7 +110,13 @@
     "path": "jidelnicek/",
     "tagline": "Osmitýdenní plán jídel s nákupním seznamem",
     "description": "Denní „ticket“ s jídly, makry a odškrtáváním, čtyři týdenní menu, která se opakují v týdnech 5–8. Ke každému receptu suroviny, postup a převod syrové váhy na uvařenou. Nákupní seznam na týden se dá zkopírovat do poznámek, celý plán vytisknout do PDF. Stav drží localStorage.",
-    "tags": ["jídlo", "plán", "nákup", "pdf", "vanilla-js"],
+    "tags": [
+      "jídlo",
+      "plán",
+      "nákup",
+      "pdf",
+      "vanilla-js"
+    ],
     "stack": "Statické HTML + vanilla JS (bez buildu)",
     "status": "active",
     "updated": "2026-08-20"
@@ -82,7 +127,12 @@
     "path": "date/prototype/",
     "tagline": "První monolitická verze plánovače večera",
     "description": "Předchůdce Évory, dva samostatné monolitické soubory pro češtinu a angličtinu. Nahradila ho modulární verze v date/src/, tady zůstává jako reference designu.",
-    "tags": ["react", "ios", "date", "archiv"],
+    "tags": [
+      "react",
+      "ios",
+      "date",
+      "archiv"
+    ],
     "stack": "React 18 + Babel standalone",
     "status": "archived",
     "updated": "2026-04-20"
